@@ -2,7 +2,15 @@ const initSqlJs = require('sql.js');
 const fs = require('fs');
 const path = require('path');
 
-const DB_DIR = process.env.RAILWAY_VOLUME_MOUNT_PATH || process.env.DB_DIR || __dirname;
+// Use Railway volume if available, otherwise fall back to local dir
+function getDbDir() {
+  const vol = process.env.RAILWAY_VOLUME_MOUNT_PATH;
+  if (vol && fs.existsSync(vol)) return vol;
+  // Check common Railway volume mount point
+  if (fs.existsSync('/data')) return '/data';
+  return process.env.DB_DIR || __dirname;
+}
+const DB_DIR = getDbDir();
 const DB_PATH = path.join(DB_DIR, 'hip-opening.db');
 let db = null;
 let dbReady = null;
@@ -10,6 +18,8 @@ let dbReady = null;
 function initDB() {
   dbReady = (async () => {
     const SQL = await initSqlJs();
+    console.log(`Database directory: ${DB_DIR}`);
+    console.log(`Database path: ${DB_PATH}`);
 
     if (fs.existsSync(DB_PATH)) {
       const buffer = fs.readFileSync(DB_PATH);
