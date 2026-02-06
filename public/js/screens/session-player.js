@@ -140,6 +140,8 @@ const SessionPlayer = {
 
         <div id="breathing-area"></div>
 
+        <div id="action-area"></div>
+
         <div id="pose-details">
           ${PoseRenderer.renderProgressionTabs(pose, this._progressionLevel)}
           ${PoseRenderer.renderMuscleInfo(pose)}
@@ -221,30 +223,24 @@ const SessionPlayer = {
 
     const pose = this._dayData.poses[this._currentPoseIndex];
 
-    // Check if bilateral and need to do other side
+    // Show action button above pose details so it's visible without scrolling
+    const actionArea = document.getElementById('action-area');
+    const controls = document.getElementById('session-controls');
+    if (controls) controls.innerHTML = '';
+
     if (pose.is_bilateral && this._currentSide === 'A') {
-      document.getElementById('session-controls').innerHTML = `
-        <button class="btn btn-primary btn-full" onclick="SessionPlayer._switchSide()">
+      if (actionArea) actionArea.innerHTML = `
+        <button class="btn btn-primary btn-full" style="margin:16px 0;" onclick="SessionPlayer._switchSide()">
           Switch to Left Side
         </button>
       `;
     } else {
-      // Move to next pose or check-in
       const isLastPose = this._currentPoseIndex >= this._dayData.poses.length - 1;
-      if (isLastPose) {
-        // Check if there's a transition before check-in
-        document.getElementById('session-controls').innerHTML = `
-          <button class="btn btn-primary btn-full" onclick="SessionPlayer._showCheckin()">
-            Continue
-          </button>
-        `;
-      } else {
-        document.getElementById('session-controls').innerHTML = `
-          <button class="btn btn-primary btn-full" onclick="SessionPlayer._showTransition()">
-            Next Pose
-          </button>
-        `;
-      }
+      if (actionArea) actionArea.innerHTML = `
+        <button class="btn btn-primary btn-full" style="margin:16px 0;" onclick="SessionPlayer.${isLastPose ? '_showCheckin' : '_showTransition'}()">
+          ${isLastPose ? 'Continue' : 'Next Pose'}
+        </button>
+      `;
     }
   },
 
