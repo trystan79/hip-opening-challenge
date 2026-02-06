@@ -98,6 +98,7 @@ const SessionPlayer = {
   },
 
   _renderPose() {
+    this._timerRunning = false;
     const container = document.getElementById('screen-container');
     const day = this._dayData;
     const pose = day.poses[this._currentPoseIndex];
@@ -126,7 +127,7 @@ const SessionPlayer = {
         </div>
 
         <div class="timer-container">
-          <div class="timer-circle" id="timer-circle">
+          <div class="timer-circle" id="timer-circle" onclick="SessionPlayer._timerTap()" style="cursor:pointer;">
             <svg class="timer-ring" viewBox="0 0 208 208">
               <circle class="ring-bg" cx="104" cy="104" r="98" />
               <circle class="ring-fill" id="ring-fill" cx="104" cy="104" r="98"
@@ -134,7 +135,7 @@ const SessionPlayer = {
                       stroke-dashoffset="0" />
             </svg>
             <div class="timer-time" id="timer-display">${Timer.formatTime(this._getDuration(pose))}</div>
-            <div class="timer-label" id="timer-label">Ready</div>
+            <div class="timer-label" id="timer-label">Tap to start</div>
           </div>
         </div>
 
@@ -162,7 +163,18 @@ const SessionPlayer = {
     `;
   },
 
+  _timerTap() {
+    if (!this._timerRunning) {
+      this._startTimer();
+    } else {
+      this._togglePause();
+    }
+  },
+
+  _timerRunning: false,
+
   _startTimer() {
+    this._timerRunning = true;
     const pose = this._dayData.poses[this._currentPoseIndex];
     const circumference = 2 * Math.PI * 98;
 
@@ -211,6 +223,7 @@ const SessionPlayer = {
   },
 
   _onTimerComplete() {
+    this._timerRunning = false;
     BreathingGuide.stop();
     const circle = document.getElementById('timer-circle');
     if (circle) {
