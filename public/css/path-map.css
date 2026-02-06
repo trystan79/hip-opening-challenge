@@ -1,0 +1,133 @@
+/* Path Map - 21 Day Visual Journey */
+.path-container {
+  padding: 8px 0;
+}
+
+.path-week {
+  margin-bottom: 24px;
+}
+
+.path-week-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.path-week-number {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 14px;
+}
+.path-week-number.week-1 { background: var(--green); color: var(--bg-primary); }
+.path-week-number.week-2 { background: var(--orange); color: var(--bg-primary); }
+.path-week-number.week-3 { background: var(--accent); color: white; }
+
+.path-week-title {
+  font-weight: 700;
+  font-size: 16px;
+}
+.path-week-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Day nodes */
+.path-days {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 18px;
+  border-left: 3px solid var(--bg-input);
+  margin-left: 16px;
+}
+
+.path-day {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+.path-day::before {
+  content: '';
+  position: absolute;
+  left: -22px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--bg-input);
+  border: 2px solid var(--bg-primary);
+}
+
+.path-day.completed::before { background: var(--green); }
+.path-day.available::before { background: var(--accent); animation: pulse 2s infinite; }
+.path-day.locked { opacity: 0.5; cursor: default; }
+.path-day.locked::before { background: var(--text-muted); }
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(233,69,96,0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(233,69,96,0); }
+}
+
+.path-day:not(.locked):hover {
+  background: var(--bg-secondary);
+  transform: translateX(4px);
+}
+
+.day-number {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.path-day.completed .day-number {
+  background: rgba(78,204,163,0.2);
+  color: var(--green);
+}
+.path-day.available .day-number {
+  background: rgba(233,69,96,0.2);
+  color: var(--accent);
+}
+.path-day.locked .day-number {
+  background: var(--bg-input);
+  color: var(--text-muted);
+}
+
+.day-info {
+  flex: 1;
+  min-width: 0;
+}
+.day-theme {
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.day-poses {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.day-status-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.path-day.completed .day-status-icon { color: var(--green); }
+.path-day.available .day-status-icon { color: var(--accent); }
+.path-day.locked .day-status-icon { color: var(--text-muted); }

@@ -1,0 +1,338 @@
+/* Session Player */
+.session-player {
+  min-height: 100vh;
+  padding: 16px;
+  padding-bottom: 32px;
+}
+
+.session-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+.session-back {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 8px;
+}
+.session-progress-text {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.session-progress-bar {
+  height: 6px;
+  background: var(--bg-input);
+  border-radius: var(--radius-full);
+  margin-bottom: 32px;
+  overflow: hidden;
+}
+.session-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--orange));
+  border-radius: var(--radius-full);
+  transition: width 0.5s ease;
+}
+
+/* Pose display */
+.pose-display {
+  text-align: center;
+  margin-bottom: 24px;
+}
+.pose-display .pose-title {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+.pose-display .pose-side {
+  font-size: 16px;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+/* Timer circle */
+.timer-container {
+  display: flex;
+  justify-content: center;
+  margin: 32px 0;
+}
+.timer-circle {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  border: 4px solid var(--bg-input);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.timer-circle.active {
+  border-color: var(--accent);
+}
+.timer-circle.complete {
+  border-color: var(--green);
+}
+.timer-time {
+  font-size: 48px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.timer-label {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* Timer SVG ring */
+.timer-ring {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  width: 208px;
+  height: 208px;
+  transform: rotate(-90deg);
+}
+.timer-ring circle {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.timer-ring .ring-bg {
+  stroke: var(--bg-input);
+}
+.timer-ring .ring-fill {
+  stroke: var(--accent);
+  transition: stroke-dashoffset 1s linear;
+}
+
+/* Cues */
+.cues-container {
+  margin: 24px 0;
+}
+.cue-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.cue-item:last-child { border-bottom: none; }
+.cue-bullet {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-top: 8px;
+  flex-shrink: 0;
+}
+.cue-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Session controls */
+.session-controls {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+.session-controls .btn {
+  flex: 1;
+}
+
+/* Breathing guide */
+.breathing-container {
+  text-align: center;
+  margin: 16px 0;
+}
+.breathing-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(78,204,163,0.2);
+  border: 2px solid var(--green);
+  margin: 0 auto;
+  animation: breathe 10s ease-in-out infinite;
+}
+.breathing-text {
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--green);
+  font-weight: 600;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(0.8); opacity: 0.6; }
+  40% { transform: scale(1.2); opacity: 1; }
+  60% { transform: scale(1.2); opacity: 1; }
+}
+
+/* Check-in screen */
+.checkin-container {
+  text-align: center;
+  padding: 20px 0;
+}
+.checkin-question {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+.checkin-scale {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 16px 0;
+}
+.checkin-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--bg-input);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.checkin-btn.selected {
+  border-color: var(--accent);
+  background: rgba(233,69,96,0.15);
+  color: var(--accent);
+}
+.checkin-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  padding: 0 4px;
+}
+
+/* Pain location selector */
+.pain-locations {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+.pain-location-btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--bg-input);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.pain-location-btn.selected {
+  border-color: var(--orange);
+  background: rgba(240,138,93,0.15);
+  color: var(--orange);
+}
+
+/* Completion screen */
+.completion-screen {
+  text-align: center;
+  padding: 40px 0;
+}
+.completion-screen h2 {
+  margin-bottom: 8px;
+}
+.completion-stats {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin: 24px 0;
+}
+.completion-stat {
+  text-align: center;
+}
+.completion-stat-value {
+  font-size: 32px;
+  font-weight: 800;
+}
+.completion-stat-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Intro screen */
+.session-intro {
+  text-align: center;
+  padding: 20px 0;
+}
+.session-intro .day-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border-radius: var(--radius-full);
+  background: rgba(233,69,96,0.15);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+.session-intro h1 {
+  margin-bottom: 8px;
+}
+
+/* Muscle info */
+.muscle-info {
+  text-align: left;
+  margin: 16px 0;
+  padding: 14px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+}
+.muscle-info .muscle-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.muscle-info .muscle-value {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* Progression toggle */
+.progression-tabs {
+  display: flex;
+  background: var(--bg-input);
+  border-radius: var(--radius-md);
+  padding: 3px;
+  margin: 16px 0;
+}
+.progression-tab {
+  flex: 1;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.progression-tab.active {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}

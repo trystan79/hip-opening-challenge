@@ -1,0 +1,13 @@
+{
+  "name": "hip-opening-challenge",
+  "version": "1.0.0",
+  "description": "21-Day Hip Opening Challenge — guided hip flexibility with gamification",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "sql.js": "^1.11.0"
+  }
+}
