@@ -116,12 +116,12 @@ const HomeScreen = {
       <div class="card" style="border-left:4px solid ${color};margin-bottom:12px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
           <span style="font-size:12px;font-weight:600;color:${color};">${r.routine_name}</span>
-          <span style="font-size:11px;color:var(--text-muted);">Cycle ${cycle} \u2022 Day ${day.id}</span>
+          <span style="font-size:11px;color:var(--text-muted);">Cycle ${cycle} \u2022 Day ${day.sort_order || day.id}</span>
         </div>
         ${painHtml || ''}
         <div style="cursor:pointer;" onclick="App.navigate('#/session/${day.id}')">
           <div style="margin-bottom:8px;">
-            <div class="badge badge-accent" style="margin-bottom:6px;">Day ${day.id}</div>
+            <div class="badge badge-accent" style="margin-bottom:6px;">Day ${day.sort_order || day.id}</div>
             <h3 style="font-size:15px;">${day.theme}</h3>
             <p style="font-size:12px;margin-top:2px;color:var(--text-muted);">${r.reason}</p>
           </div>
@@ -254,7 +254,7 @@ const HomeScreen = {
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
           <div>
             <span class="badge badge-accent" style="margin-right:6px;">Shuffled</span>
-            <span class="badge" style="background:var(--surface);border:1px solid var(--border);">Day ${day.id}</span>
+            <span class="badge" style="background:var(--surface);border:1px solid var(--border);">Day ${day.sort_order || day.id}</span>
           </div>
           <button class="btn btn-ghost" style="padding:4px 8px;font-size:12px;" onclick="HomeScreen._cancelShuffle()">Back to schedule</button>
         </div>

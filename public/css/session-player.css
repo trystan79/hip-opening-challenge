@@ -84,11 +84,13 @@
   font-size: 48px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
+  pointer-events: none;
 }
 .timer-label {
   font-size: 14px;
   color: var(--text-muted);
   margin-top: 4px;
+  pointer-events: none;
 }
 
 /* Timer SVG ring */
@@ -99,6 +101,7 @@
   width: 208px;
   height: 208px;
   transform: rotate(-90deg);
+  pointer-events: none;
 }
 .timer-ring circle {
   fill: none;

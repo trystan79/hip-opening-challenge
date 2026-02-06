@@ -49,12 +49,12 @@ const SessionPlayer = {
       <div class="session-player screen-enter">
         <div class="session-header">
           <button class="session-back" onclick="SessionPlayer._confirmExit()">\u2190</button>
-          <div class="session-progress-text">Day ${day.id}</div>
+          <div class="session-progress-text">Day ${day.sort_order || day.id}</div>
           <div></div>
         </div>
 
         <div class="session-intro">
-          <div class="day-badge">${this._isShuffle ? '<span style="color:var(--accent);">Shuffled \u2022 </span>' : ''}Week ${day.week} \u2022 Day ${day.id}</div>
+          <div class="day-badge">${this._isShuffle ? '<span style="color:var(--accent);">Shuffled \u2022 </span>' : ''}Week ${day.week} \u2022 Day ${day.sort_order || day.id}</div>
           <h1>${day.theme}</h1>
           <p style="margin-top:8px;">${day.description}</p>
 
@@ -432,7 +432,7 @@ const SessionPlayer = {
       <div class="session-player screen-enter">
         <div class="completion-screen">
           <div style="font-size:64px;margin-bottom:16px;">${result.cycle_complete ? '\uD83C\uDFC6' : '\uD83C\uDF1F'}</div>
-          <h2>${result.cycle_complete ? 'Cycle ' + cycle + ' Complete!' : 'Day ' + day.id + ' Done!'}</h2>
+          <h2>${result.cycle_complete ? 'Cycle ' + cycle + ' Complete!' : 'Day ' + (day.sort_order || day.id) + ' Done!'}</h2>
           <p>${result.is_shuffle ? 'Shuffled session complete! Your schedule wasn\'t affected.' : (result.cycle_complete ? 'You completed all days in this cycle!' : 'Keep up the great work!')}</p>
 
           <div class="completion-stats">
