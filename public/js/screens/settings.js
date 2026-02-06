@@ -1,9 +1,15 @@
 const SettingsScreen = {
+  _allUsers: [],
+
   async render(container) {
     container.innerHTML = '<div class="screen-enter"><p style="text-align:center;padding-top:40px;">Loading...</p></div>';
 
     const user = await API.getUser();
     const difficulty = user.difficulty || 'easy';
+    const isAdmin = Session.isAdmin();
+    if (isAdmin) {
+      this._allUsers = await API.getUsers();
+    }
 
     container.innerHTML = `
       <div class="screen-enter">
@@ -89,6 +95,26 @@ const SettingsScreen = {
           </button>
         </div>
 
+        ${isAdmin ? `
+        <div class="card">
+          <h3 style="margin-bottom:16px;">Admin - Manage Users</h3>
+          ${this._allUsers.map(u => `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;${u.id !== this._allUsers[this._allUsers.length-1].id ? 'border-bottom:1px solid var(--bg-input);' : ''}">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:24px;">${Mascot.getEmoji(u.mascot)}</span>
+                <span style="font-weight:600;">${this._escapeHtml(u.name)}</span>
+                ${u.is_admin ? '<span style="font-size:11px;color:var(--accent);font-weight:600;">ADMIN</span>' : ''}
+              </div>
+              ${!u.is_admin ? `
+                <button class="btn btn-ghost" style="color:var(--red);padding:4px 12px;font-size:13px;" onclick="SettingsScreen._deleteUser(${u.id}, '${this._escapeHtml(u.name).replace(/'/g, "\\'")}')">
+                  Delete
+                </button>
+              ` : ''}
+            </div>
+          `).join('')}
+        </div>
+        ` : ''}
+
         <button class="btn btn-ghost btn-full" style="margin-top:8px;color:var(--red);" onclick="SettingsScreen._logout()">
           Switch User
         </button>
@@ -167,6 +193,13 @@ const SettingsScreen = {
     if (confirm('Reset all progress? This cannot be undone. Your name and mascot will be kept.')) {
       await API.resetProgress();
       App.navigate('#/home');
+    }
+  },
+
+  async _deleteUser(userId, name) {
+    if (confirm(`Delete ${name}? This will remove all their progress.`)) {
+      await API.deleteUser(userId);
+      this.render(document.getElementById('screen-container'));
     }
   },
 
