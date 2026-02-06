@@ -168,10 +168,7 @@ const SessionPlayer = {
     document.getElementById('timer-label').textContent = 'Hold...';
 
     // Start breathing guide
-    BreathingGuide.render(
-      document.getElementById('breathing-area'),
-      pose.breathing_pattern || { inhale: 4, hold: 0, exhale: 6 }
-    );
+    BreathingGuide.render(document.getElementById('breathing-area'));
 
     // Replace button with pause/skip
     document.getElementById('session-controls').innerHTML = `

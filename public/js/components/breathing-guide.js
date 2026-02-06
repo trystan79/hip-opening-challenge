@@ -1,33 +1,39 @@
 const BreathingGuide = {
   _interval: null,
 
-  render(container, pattern = { inhale: 4, hold: 0, exhale: 6 }) {
-    const total = pattern.inhale + pattern.hold + pattern.exhale;
+  render(container) {
+    const inhale = 4;
+    const exhale = 8;
+    const total = inhale + exhale;
     container.innerHTML = `
       <div class="breathing-container">
         <div class="breathing-circle" style="animation-duration: ${total}s"></div>
-        <div class="breathing-text" id="breathing-phase">Breathe in...</div>
+        <div class="breathing-text" id="breathing-phase">Breathe in... ${inhale}</div>
       </div>
     `;
-    this._startCycle(pattern);
+    this._startCycle(inhale, exhale);
   },
 
-  _startCycle(pattern) {
+  _startCycle(inhale, exhale) {
     this.stop();
-    const phases = [];
-    for (let i = 0; i < pattern.inhale; i++) phases.push('Breathe in...');
-    for (let i = 0; i < pattern.hold; i++) phases.push('Hold...');
-    for (let i = 0; i < pattern.exhale; i++) phases.push('Breathe out...');
-
-    let idx = 0;
+    const total = inhale + exhale;
+    let tick = 0;
     const el = document.getElementById('breathing-phase');
-    if (el) el.textContent = phases[0];
 
-    this._interval = setInterval(() => {
-      idx = (idx + 1) % phases.length;
-      const el = document.getElementById('breathing-phase');
-      if (el) el.textContent = phases[idx];
-    }, 1000);
+    const update = () => {
+      const pos = tick % total;
+      if (pos < inhale) {
+        const countdown = inhale - pos;
+        if (el) el.textContent = `Breathe in... ${countdown}`;
+      } else {
+        const countdown = exhale - (pos - inhale);
+        if (el) el.textContent = `Breathe out... ${countdown}`;
+      }
+      tick++;
+    };
+
+    update();
+    this._interval = setInterval(update, 1000);
   },
 
   stop() {
