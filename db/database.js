@@ -2,7 +2,7 @@ const initSqlJs = require('sql.js');
 const fs = require('fs');
 const path = require('path');
 
-const DB_DIR = process.env.DB_DIR || __dirname;
+const DB_DIR = process.env.RAILWAY_VOLUME_MOUNT_PATH || process.env.DB_DIR || __dirname;
 const DB_PATH = path.join(DB_DIR, 'hip-opening.db');
 let db = null;
 let dbReady = null;
