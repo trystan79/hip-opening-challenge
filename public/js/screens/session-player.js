@@ -373,25 +373,41 @@ const SessionPlayer = {
   },
 
   async _completeSession() {
-    const result = await API.completeSession(this._sessionId, {
-      difficulty_rating: this._ratings.difficulty,
-      flexibility_rating: this._ratings.flexibility,
-      pain_rating: this._ratings.pain,
-      pain_location: this._painLocation
-    });
+    try {
+      const result = await API.completeSession(this._sessionId, {
+        difficulty_rating: this._ratings.difficulty,
+        flexibility_rating: this._ratings.flexibility,
+        pain_rating: this._ratings.pain,
+        pain_location: this._painLocation
+      });
 
-    // Show XP toast & play sounds
-    XPToast.show(result.xp_earned);
-    SoundManager.xpEarned();
-    SoundManager.sessionComplete();
-    if (result.level_up) {
-      setTimeout(() => {
-        XPToast.showLevelUp(result.new_level);
-        SoundManager.levelUp();
-      }, 500);
+      // Show XP toast & play sounds
+      XPToast.show(result.xp_earned);
+      SoundManager.xpEarned();
+      SoundManager.sessionComplete();
+      if (result.level_up) {
+        setTimeout(() => {
+          XPToast.showLevelUp(result.new_level);
+          SoundManager.levelUp();
+        }, 500);
+      }
+
+      this._showCompletion(result);
+    } catch (err) {
+      console.error('Session complete error:', err);
+      // Session may have been lost (e.g. server restart) — show friendly message
+      const container = document.getElementById('screen-container');
+      container.innerHTML = `
+        <div class="session-player screen-enter">
+          <div class="completion-screen">
+            <div style="font-size:64px;margin-bottom:16px;">\u2705</div>
+            <h2>Great work!</h2>
+            <p style="margin-top:8px;">Your session couldn't be saved (the server may have restarted). But you still did the stretches — that's what counts!</p>
+            <button class="btn btn-primary btn-full" style="margin-top:24px;" onclick="App.navigate('#/home')">Home</button>
+          </div>
+        </div>
+      `;
     }
-
-    this._showCompletion(result);
   },
 
   _showCompletion(result) {

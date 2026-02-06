@@ -5,7 +5,15 @@ const HomeScreen = {
     container.innerHTML = '<div class="screen-enter"><p style="text-align:center;padding-top:40px;">Loading...</p></div>';
 
     this._shuffleDay = null;
-    const data = await API.getTodayAll();
+    let data;
+    try {
+      data = await API.getTodayAll();
+    } catch (err) {
+      // User likely doesn't exist in DB (server restart wiped data)
+      Session.clearUser();
+      App.navigate('#/login');
+      return;
+    }
     const user = data.user;
     const routines = data.routines || [];
 
