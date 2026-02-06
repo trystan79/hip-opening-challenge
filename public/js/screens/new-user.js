@@ -67,7 +67,7 @@ const NewUserScreen = {
       Session.setMascot(user.mascot);
       App.navigate('#/home');
     } catch (err) {
-      errorEl.textContent = 'Failed to create account. Try again.';
+      errorEl.textContent = err.message.includes('10') ? 'Maximum 10 users reached.' : 'Failed to create account. Try again.';
       errorEl.style.display = 'block';
     }
   }

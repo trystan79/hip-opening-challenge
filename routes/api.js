@@ -145,9 +145,16 @@ router.post('/users', (req, res) => {
   if (!name || !name.trim()) return res.status(400).json({ error: 'Name is required' });
   if (!pin || !/^\d{4}$/.test(pin)) return res.status(400).json({ error: 'PIN must be 4 digits' });
 
+  // Enforce max 10 users
+  const userCount = db.prepare('SELECT COUNT(*) as count FROM user').get().count;
+  if (userCount >= 10) return res.status(400).json({ error: 'Maximum 10 users reached. Ask an admin to remove an account.' });
+
+  // First user is automatically admin
+  const isAdmin = userCount === 0 ? 1 : 0;
+
   const result = db.prepare(
-    'INSERT INTO user (name, mascot, pin) VALUES (?, ?, ?)'
-  ).run(name.trim(), mascot || 'fox', pin);
+    'INSERT INTO user (name, mascot, pin, is_admin) VALUES (?, ?, ?, ?)'
+  ).run(name.trim(), mascot || 'fox', pin, isAdmin);
   const userId = result.lastInsertRowid;
 
   // Auto-enroll in routine 1

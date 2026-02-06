@@ -3,6 +3,8 @@ const LoginScreen = {
     container.innerHTML = '<div class="screen-enter" style="text-align:center;padding-top:40px;"><p>Loading...</p></div>';
 
     const users = await API.getUsers();
+    const isAdmin = Session.isAdmin();
+    const atLimit = users.length >= 10;
 
     container.innerHTML = `
       <div class="screen-enter" style="padding-top:40px;">
@@ -17,24 +19,35 @@ const LoginScreen = {
           <div class="section">
             <div class="section-title">Who's stretching?</div>
             ${users.map(u => `
-              <div class="card" style="display:flex;align-items:center;gap:14px;cursor:pointer;margin-bottom:8px;" onclick="LoginScreen._selectUser(${u.id}, ${u.has_pin})">
-                <div style="font-size:32px;">${Mascot.getEmoji(u.mascot)}</div>
-                <div style="flex:1;">
-                  <div style="font-weight:700;">${this._escapeHtml(u.name)}</div>
-                  <div style="font-size:12px;color:var(--text-muted);">Level ${u.level} \u2022 ${u.streak_count} day streak</div>
+              <div class="card" style="display:flex;align-items:center;gap:14px;margin-bottom:8px;">
+                <div style="flex:1;display:flex;align-items:center;gap:14px;cursor:pointer;" onclick="LoginScreen._selectUser(${u.id}, ${u.has_pin})">
+                  <div style="font-size:32px;">${Mascot.getEmoji(u.mascot)}</div>
+                  <div style="flex:1;">
+                    <div style="font-weight:700;">${this._escapeHtml(u.name)}${u.is_admin ? ' <span style="font-size:11px;color:var(--accent);">admin</span>' : ''}</div>
+                    <div style="font-size:12px;color:var(--text-muted);">Level ${u.level} \u2022 ${u.streak_count} day streak</div>
+                  </div>
+                  <div style="color:var(--text-muted);font-size:20px;">\u203A</div>
                 </div>
-                <div style="color:var(--text-muted);font-size:20px;">\u203A</div>
+                ${isAdmin && !u.is_admin ? `
+                  <button style="background:none;border:none;color:var(--red);font-size:18px;padding:8px;cursor:pointer;opacity:0.6;" onclick="LoginScreen._deleteUser(${u.id}, '${this._escapeHtml(u.name).replace(/'/g, "\\'")}')">
+                    \u2715
+                  </button>
+                ` : ''}
               </div>
             `).join('')}
           </div>
         ` : ''}
 
-        <button class="btn btn-primary btn-full" onclick="App.navigate('#/new-user')" style="margin-top:16px;">
-          + New Challenger
-        </button>
+        ${atLimit ? `
+          <p style="text-align:center;font-size:13px;color:var(--text-muted);margin-top:16px;">Maximum 10 users reached</p>
+        ` : `
+          <button class="btn btn-primary btn-full" onclick="App.navigate('#/new-user')" style="margin-top:16px;">
+            + New Challenger
+          </button>
+        `}
       </div>
 
-      <div id="pin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;display:none;align-items:center;justify-content:center;">
+      <div id="pin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;align-items:center;justify-content:center;">
         <div class="card" style="width:300px;text-align:center;">
           <h3 style="margin-bottom:16px;">Enter PIN</h3>
           <input type="password" id="pin-input" maxlength="4" pattern="[0-9]*" inputmode="numeric"
@@ -86,6 +99,13 @@ const LoginScreen = {
     Session.setUser(userId);
     Session.setAdmin(isAdmin);
     App.navigate('#/home');
+  },
+
+  async _deleteUser(userId, name) {
+    if (confirm(`Delete ${name}? This will remove all their progress.`)) {
+      await API.deleteUser(userId);
+      App.navigate('#/login');
+    }
   },
 
   _escapeHtml(text) {
