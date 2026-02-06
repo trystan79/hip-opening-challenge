@@ -248,6 +248,7 @@ router.patch('/user', (req, res) => {
   if (mascot) db.prepare('UPDATE user SET mascot = ? WHERE id = ?').run(mascot, userId);
   if (difficulty && ['easy', 'medium', 'hard'].includes(difficulty)) {
     db.prepare('UPDATE user SET difficulty = ? WHERE id = ?').run(difficulty, userId);
+    db.prepare('UPDATE user_routine SET difficulty = ? WHERE user_id = ?').run(difficulty, userId);
   }
   if (preferences) {
     const current = JSON.parse(
