@@ -6,9 +6,39 @@ const SessionPlayer = {
   _phase: 'intro', // intro, pose, transition, checkin, complete
   _progressionLevel: 'full',
   _isShuffle: false,
+  _wakeLock: null,
+
+  async _requestWakeLock() {
+    try {
+      if ('wakeLock' in navigator) {
+        this._wakeLock = await navigator.wakeLock.request('screen');
+        this._wakeLock.addEventListener('release', () => { this._wakeLock = null; });
+      }
+    } catch (e) { /* wake lock not supported or denied */ }
+  },
+
+  _releaseWakeLock() {
+    if (this._wakeLock) {
+      this._wakeLock.release();
+      this._wakeLock = null;
+    }
+    if (this._visibilityHandler) {
+      document.removeEventListener('visibilitychange', this._visibilityHandler);
+      this._visibilityHandler = null;
+    }
+  },
 
   async render(container, dayId, isShuffle) {
     container.innerHTML = Skeleton.sessionIntro();
+    this._requestWakeLock();
+
+    // Re-acquire wake lock when returning from background (iOS releases it)
+    this._visibilityHandler = () => {
+      if (document.visibilityState === 'visible' && this._phase !== 'complete') {
+        this._requestWakeLock();
+      }
+    };
+    document.addEventListener('visibilitychange', this._visibilityHandler);
 
     const dayData = await API.getDay(dayId);
     this._dayData = dayData;
@@ -555,6 +585,7 @@ const SessionPlayer = {
   },
 
   _showCompletion(result) {
+    this._releaseWakeLock();
     const container = document.getElementById('screen-container');
     const day = this._dayData;
     const cycle = result.current_cycle || 1;
@@ -649,12 +680,14 @@ const SessionPlayer = {
 
   _confirmExit() {
     if (this._phase === 'intro') {
+      this._releaseWakeLock();
       App.navigate('#/home');
       return;
     }
     if (confirm('Leave this session? Your progress won\'t be saved.')) {
       Timer.stop();
       this._stopBreathingInCircle();
+      this._releaseWakeLock();
       App.navigate('#/home');
     }
   },
