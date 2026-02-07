@@ -22,10 +22,33 @@ function initDB() {
     console.log(`Database path: ${DB_PATH}`);
 
     if (fs.existsSync(DB_PATH)) {
-      const buffer = fs.readFileSync(DB_PATH);
-      db = new SQL.Database(buffer);
-      console.log('Database loaded from disk.');
-      _runMigrations();
+      try {
+        const buffer = fs.readFileSync(DB_PATH);
+        db = new SQL.Database(buffer);
+        console.log('Database loaded from disk.');
+        _runMigrations();
+      } catch (loadErr) {
+        console.error('Database file corrupted, backing up and recreating:', loadErr.message);
+        const backupPath = DB_PATH + '.corrupt.' + Date.now();
+        try { fs.renameSync(DB_PATH, backupPath); } catch (e) { /* ignore */ }
+        db = new SQL.Database();
+        console.log('Initializing fresh database after corruption...');
+
+        const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf-8');
+        db.exec(schema);
+
+        const seed = fs.readFileSync(path.join(__dirname, 'seed.sql'), 'utf-8');
+        db.exec(seed);
+
+        const legsSeedPath = path.join(__dirname, 'seed-legs.sql');
+        if (fs.existsSync(legsSeedPath)) {
+          const legsSeed = fs.readFileSync(legsSeedPath, 'utf-8');
+          db.exec(legsSeed);
+        }
+
+        _save();
+        console.log('Fresh database initialized.');
+      }
     } else {
       db = new SQL.Database();
       console.log('Initializing new database...');
@@ -329,7 +352,9 @@ function _runMigrations() {
 function _save() {
   if (!db) return;
   const data = db.export();
-  fs.writeFileSync(DB_PATH, Buffer.from(data));
+  const tmpPath = DB_PATH + '.tmp';
+  fs.writeFileSync(tmpPath, Buffer.from(data));
+  fs.renameSync(tmpPath, DB_PATH);
 }
 
 function getDB() {

@@ -29,6 +29,19 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Hip Opening Challenge running at http://localhost:${PORT}`);
 });
+
+// Graceful shutdown - let Railway stop cleanly
+function shutdown(signal) {
+  console.log(`${signal} received, shutting down gracefully...`);
+  server.close(() => {
+    console.log('Server closed.');
+    process.exit(0);
+  });
+  // Force exit after 5s if connections don't close
+  setTimeout(() => process.exit(0), 5000);
+}
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
