@@ -94,6 +94,7 @@ const API = {
   getShuffle(mode) { return this.get(`/shuffle?mode=${mode}`); },
   getSimilarPoses(poseId) { return this.get(`/poses/${poseId}/similar`); },
   substitutePose(originalId, replacementId) { return this.post('/substitutions', { original_pose_id: originalId, replacement_pose_id: replacementId }); },
+  getLeaderboard() { return this.get('/leaderboard'); },
   removeSubstitution(poseId) {
     const userId = Session.getUser();
     return fetch(`/api/substitutions/${poseId}?userId=${userId}`, { method: 'DELETE' }).then(r => r.json());

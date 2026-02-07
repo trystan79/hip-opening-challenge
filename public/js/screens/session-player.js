@@ -478,6 +478,11 @@ const SessionPlayer = {
         setTimeout(() => AchievementToast.showAll(result.achievements), 1500);
       }
 
+      // Competitive leaderboard alerts
+      if (result.leaderboard) {
+        setTimeout(() => this._showLeaderboardAlerts(result.leaderboard), 2200);
+      }
+
       this._showCompletion(result);
     } catch (err) {
       console.error('Session complete error:', err);
@@ -496,6 +501,59 @@ const SessionPlayer = {
     }
   },
 
+  _showLeaderboardAlerts(lb) {
+    const alerts = [];
+    const categories = [
+      { key: 'streak', label: 'streak' },
+      { key: 'xp', label: 'XP' },
+      { key: 'level', label: 'level' }
+    ];
+
+    for (const cat of categories) {
+      const before = lb.before[cat.key];
+      const after = lb.after[cat.key];
+      if (!before || !after) continue;
+
+      // Moved up in rank
+      if (after.rank < before.rank) {
+        const passed = before.rank - after.rank;
+        alerts.push(`\u{1F4AA} You moved up ${passed} spot${passed > 1 ? 's' : ''} in ${cat.label}! Now #${after.rank}`);
+      }
+
+      // Someone close behind
+      if (after.behind && after.total > 1) {
+        const gap = after.userValue - after.behind.value;
+        if (gap <= 2 && gap > 0) {
+          alerts.push(`\u{1F440} ${after.behind.name} is right behind you in ${cat.label}!`);
+        }
+      }
+
+      // Someone close ahead
+      if (after.ahead && after.rank > 1) {
+        const gap = after.ahead.value - after.userValue;
+        if (gap <= 2 && gap > 0) {
+          alerts.push(`\u{1F525} You're close to passing ${after.ahead.name} in ${cat.label}!`);
+        }
+      }
+    }
+
+    // Show max 2 alerts to avoid toast spam
+    alerts.slice(0, 2).forEach((msg, i) => {
+      setTimeout(() => this._showCompetitiveToast(msg), i * 600);
+    });
+  },
+
+  _showCompetitiveToast(message) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = 'competitive-toast';
+    toast.innerHTML = `<span>${message}</span>`;
+    toast.style.cssText = 'background:var(--bg-card);border:2px solid var(--purple);border-radius:var(--radius-lg);padding:14px 18px;box-shadow:var(--shadow-lg);color:var(--text-primary);font-size:14px;font-weight:600;animation:toastIn 0.4s ease,toastOut 0.4s ease 3.6s;pointer-events:auto;';
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 4200);
+  },
+
   _showCompletion(result) {
     const container = document.getElementById('screen-container');
     const day = this._dayData;
@@ -509,7 +567,7 @@ const SessionPlayer = {
           <p>${result.is_shuffle ? 'Shuffled session complete! Your schedule wasn\'t affected.' : (result.cycle_complete ? 'You completed all days in this cycle!' : 'Keep up the great work!')}</p>
 
           ${result.bonus_xp > 0 ? `
-            <div style="display:inline-block;padding:6px 16px;border-radius:var(--radius-full);background:rgba(240,195,142,0.15);color:var(--yellow);font-weight:700;font-size:14px;margin-bottom:8px;">
+            <div style="display:inline-block;padding:6px 16px;border-radius:var(--radius-full);background:var(--yellow-tint-bg);color:var(--yellow);font-weight:700;font-size:14px;margin-bottom:8px;">
               ${{ critical: 'Critical Stretch! \u00D72 XP', bonus: 'Bonus! +50% XP', lucky: 'Lucky! +25% XP' }[result.bonus_type] || 'Bonus XP!'}
             </div>
           ` : ''}

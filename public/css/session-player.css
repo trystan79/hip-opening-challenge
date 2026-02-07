@@ -135,7 +135,7 @@
   align-items: flex-start;
   gap: 10px;
   padding: 10px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid var(--white-alpha-5);
 }
 .cue-item:last-child { border-bottom: none; }
 .cue-bullet {
@@ -171,7 +171,7 @@
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: rgba(78,204,163,0.2);
+  background: var(--green-tint);
   border: 2px solid var(--green);
   margin: 0 auto;
   animation: breathe 10s ease-in-out infinite;
@@ -219,7 +219,7 @@
 }
 .checkin-btn.selected {
   border-color: var(--accent);
-  background: rgba(233,69,96,0.15);
+  background: var(--accent-tint);
   color: var(--accent);
 }
 .checkin-labels {
@@ -252,7 +252,7 @@
 }
 .pain-location-btn.selected {
   border-color: var(--orange);
-  background: rgba(240,138,93,0.15);
+  background: var(--orange-tint);
   color: var(--orange);
 }
 
@@ -293,7 +293,7 @@
   gap: 8px;
   padding: 8px 20px;
   border-radius: var(--radius-full);
-  background: rgba(233,69,96,0.15);
+  background: var(--accent-tint);
   color: var(--accent);
   font-weight: 700;
   font-size: 14px;

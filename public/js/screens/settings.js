@@ -44,6 +44,23 @@ const SettingsScreen = {
         </div>
 
         <div class="card">
+          <h3 style="margin-bottom:16px;">Appearance</h3>
+          <div class="section-title">Theme</div>
+          <div class="rating-group">
+            ${[
+              { key: 'system', label: 'System' },
+              { key: 'light', label: 'Light' },
+              { key: 'dark', label: 'Dark' }
+            ].map(t => `
+              <button class="rating-btn ${ThemeManager.get() === t.key ? 'selected' : ''}" data-theme="${t.key}"
+                      onclick="SettingsScreen._setTheme('${t.key}')">
+                ${t.label}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="card">
           <h3 style="margin-bottom:16px;">Session Settings</h3>
           <div style="margin-bottom:12px;">
             <div class="section-title">Difficulty</div>
@@ -166,6 +183,13 @@ const SettingsScreen = {
       toast.querySelector('.xp-amount').textContent = '\u2713';
       toast.querySelector('.xp-label').textContent = 'Saved!';
     }
+  },
+
+  _setTheme(theme) {
+    ThemeManager.set(theme);
+    document.querySelectorAll('.rating-btn[data-theme]').forEach(btn => {
+      btn.classList.toggle('selected', btn.dataset.theme === theme);
+    });
   },
 
   async _setDifficulty(difficulty) {

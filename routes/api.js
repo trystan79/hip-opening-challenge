@@ -221,6 +221,48 @@ router.patch('/users/:id/pin', (req, res) => {
   res.json({ success: true });
 });
 
+// ===== LEADERBOARD HELPERS =====
+
+function getLeaderboardRanks(db, userId) {
+  const users = db.prepare('SELECT id, name, xp, streak_count, level FROM user ORDER BY id').all();
+
+  function rankBy(key, tiebreak) {
+    const sorted = [...users].sort((a, b) => b[key] - a[key] || b[tiebreak] - a[tiebreak]);
+    const userIdx = sorted.findIndex(u => u.id === userId);
+    return {
+      rank: userIdx + 1,
+      total: sorted.length,
+      ahead: userIdx > 0 ? { name: sorted[userIdx - 1].name, value: sorted[userIdx - 1][key] } : null,
+      behind: userIdx < sorted.length - 1 ? { name: sorted[userIdx + 1].name, value: sorted[userIdx + 1][key] } : null,
+      userValue: userIdx >= 0 ? sorted[userIdx][key] : 0
+    };
+  }
+
+  return {
+    streak: rankBy('streak_count', 'xp'),
+    xp: rankBy('xp', 'level'),
+    level: rankBy('level', 'xp')
+  };
+}
+
+// ===== LEADERBOARD =====
+
+router.get('/leaderboard', (req, res) => {
+  const db = getDB();
+  const users = db.prepare(
+    'SELECT id, name, mascot, xp, level, streak_count, longest_streak FROM user ORDER BY streak_count DESC, xp DESC'
+  ).all();
+
+  users.forEach(u => {
+    const count = db.prepare(
+      'SELECT COUNT(*) as count FROM session_log WHERE user_id = ? AND completed = 1'
+    ).get(u.id);
+    u.total_sessions = count ? count.count : 0;
+  });
+
+  res.json(users);
+});
+
 // ===== CURRENT USER =====
 
 router.get('/user', (req, res) => {
@@ -767,6 +809,9 @@ router.post('/sessions/:id/complete', (req, res) => {
   if (!session) return res.status(404).json({ error: 'Session not found' });
   if (session.completed === 1) return res.status(400).json({ error: 'Session already completed' });
 
+  // Snapshot leaderboard ranks before updates
+  const ranksBefore = getLeaderboardRanks(db, userId);
+
   const day = db.prepare('SELECT * FROM day WHERE id = ?').get(session.day_id);
   let xpEarned = 20 + (day.week - 1) * 5; // Week 1: 20, Week 2: 25, Week 3: 30
 
@@ -826,6 +871,7 @@ router.post('/sessions/:id/complete', (req, res) => {
       WHERE id = ?
     `).run(newXP, newLevel, newStreak, longestStreak, today, userId);
 
+    const ranksAfterShuffle = getLeaderboardRanks(db, userId);
     return res.json({
       xp_earned: totalXpEarned,
       bonus_xp: bonusXP,
@@ -837,7 +883,8 @@ router.post('/sessions/:id/complete', (req, res) => {
       level_up: newLevel > user.level,
       cycle_complete: false,
       current_cycle: ur ? ur.current_cycle : 1,
-      is_shuffle: true
+      is_shuffle: true,
+      leaderboard: { before: ranksBefore, after: ranksAfterShuffle }
     });
   }
 
@@ -908,6 +955,7 @@ router.post('/sessions/:id/complete', (req, res) => {
     }
   }
 
+  const ranksAfter = getLeaderboardRanks(db, userId);
   res.json({
     xp_earned: totalXpEarned,
     bonus_xp: bonusXP,
@@ -920,7 +968,8 @@ router.post('/sessions/:id/complete', (req, res) => {
     cycle_complete: lockedOrAvailable === 0,
     current_cycle: ur ? ur.current_cycle : 1,
     routine_id: routineId,
-    achievements: newAchievements
+    achievements: newAchievements,
+    leaderboard: { before: ranksBefore, after: ranksAfter }
   });
 });
 

@@ -41,7 +41,7 @@ const LoginScreen = {
           `}
         </div>
 
-        <div class="pin-modal" id="pin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;align-items:center;justify-content:center;">
+        <div class="pin-modal" id="pin-modal" style="display:none;position:fixed;inset:0;background:var(--overlay);z-index:200;align-items:center;justify-content:center;">
           <div class="card" style="width:300px;text-align:center;">
             <h3 style="margin-bottom:16px;">Enter PIN</h3>
             <input type="password" id="pin-input" maxlength="4" pattern="[0-9]*" inputmode="numeric"

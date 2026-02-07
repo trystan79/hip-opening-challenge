@@ -9,7 +9,7 @@ const PosePicker = {
     // Create modal
     const modal = document.createElement('div');
     modal.id = 'pose-picker-modal';
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;';
+    modal.style.cssText = 'position:fixed;inset:0;background:var(--overlay-heavy);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;';
 
     modal.innerHTML = `
       <div class="card" style="width:100%;max-width:400px;max-height:80vh;overflow-y:auto;">

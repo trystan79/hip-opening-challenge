@@ -11,6 +11,7 @@ const NavBar = {
       { route: 'home', icon: '\u2302', label: 'Home' },
       { route: 'path', icon: '\u2261', label: 'Journey' },
       { route: 'progress', icon: '\u2197', label: 'Progress' },
+      { route: 'leaderboard', icon: '\uD83C\uDFC6', label: 'Board' },
       { route: 'settings', icon: '\u2699', label: 'Settings' }
     ];
 

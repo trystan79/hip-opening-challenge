@@ -1,5 +1,7 @@
 const App = {
   init() {
+    ThemeManager.init();
+
     // Initialize sound/haptic state from localStorage
     SoundManager.setEnabled(localStorage.getItem('hipChallenge_sound') !== '0');
     SoundManager.setHapticsEnabled(localStorage.getItem('hipChallenge_haptics') !== '0');
@@ -63,6 +65,7 @@ const App = {
           case 'path': await PathScreen.render(container); break;
           case 'progress': await ProgressScreen.render(container); break;
           case 'routines': await RoutinesScreen.render(container); break;
+          case 'leaderboard': await LeaderboardScreen.render(container); break;
           case 'settings': await SettingsScreen.render(container); break;
           default: await HomeScreen.render(container);
         }

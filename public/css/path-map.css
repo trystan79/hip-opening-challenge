@@ -95,11 +95,11 @@
   flex-shrink: 0;
 }
 .path-day.completed .day-number {
-  background: rgba(78,204,163,0.2);
+  background: var(--green-tint);
   color: var(--green);
 }
 .path-day.available .day-number {
-  background: rgba(233,69,96,0.2);
+  background: var(--badge-accent-bg);
   color: var(--accent);
 }
 .path-day.locked .day-number {
