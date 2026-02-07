@@ -387,8 +387,6 @@ const SessionPlayer = {
     }
     SoundManager.timerComplete();
 
-    const pose = this._dayData.poses[this._currentPoseIndex];
-
     // Show action button above pose details so it's visible without scrolling
     const actionArea = document.getElementById('action-area');
     const controls = document.getElementById('session-controls');
