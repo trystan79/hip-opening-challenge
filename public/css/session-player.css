@@ -465,14 +465,14 @@
       0 0 80px rgba(233, 69, 96, 0.08);
   }
 
-  /* Ambient glow — breathing pulse synced with inhale/exhale */
+  /* Dramatic breathing — circle visibly swells and contracts */
   .timer-circle.breathing {
     animation: landscapeBreathe 12s ease-in-out infinite;
   }
   @keyframes landscapeBreathe {
-    0%    { transform: scale(1);    box-shadow: 0 0 30px rgba(233,69,96,0.15), 0 0 60px rgba(233,69,96,0.05); }
-    33.3% { transform: scale(1.04); box-shadow: 0 0 50px rgba(233,69,96,0.30), 0 0 100px rgba(233,69,96,0.10); }
-    100%  { transform: scale(1);    box-shadow: 0 0 30px rgba(233,69,96,0.15), 0 0 60px rgba(233,69,96,0.05); }
+    0%    { transform: scale(1);    box-shadow: 0 0 20px rgba(233,69,96,0.10), 0 0 40px rgba(233,69,96,0.03); }
+    33.3% { transform: scale(1.15); box-shadow: 0 0 60px rgba(233,69,96,0.40), 0 0 120px rgba(233,69,96,0.15); }
+    100%  { transform: scale(1);    box-shadow: 0 0 20px rgba(233,69,96,0.10), 0 0 40px rgba(233,69,96,0.03); }
   }
 
   /* Ambient glow — complete state */
@@ -496,28 +496,8 @@
     width: auto;
   }
 
-  .session-controls {
-    grid-column: 3;
-    grid-row: 1;
-    align-self: center;
-    justify-self: start;
-    flex-direction: column;
-    align-items: start;
-    margin: 0;
-    gap: 10px;
-  }
-  .session-controls .btn {
-    flex: none;
-    border-radius: var(--radius-full);
-    font-size: 14px;
-    padding: 10px 24px;
-  }
-  .session-controls .btn-full { width: auto; }
-  .session-controls .btn-ghost {
-    opacity: 0.4;
-    font-size: 13px;
-    padding: 8px 20px;
-  }
+  /* Hide controls — timer circle handles start (tap) and pause (tap) */
+  .session-controls { display: none; }
 
   /* --- Full-width screens: compact checkin & completion --- */
   .checkin-container { padding: 8px 16px; }
