@@ -129,6 +129,7 @@ const SessionPlayer = {
 
   _renderPose() {
     this._timerRunning = false;
+    this._countingDown = false;
     const container = document.getElementById('screen-container');
     const day = this._dayData;
     const pose = day.poses[this._currentPoseIndex];
@@ -192,6 +193,8 @@ const SessionPlayer = {
   },
 
   _timerTap() {
+    // During countdown, ignore taps
+    if (this._countingDown) return;
     if (!this._timerRunning) {
       this._startTimer();
     } else {
@@ -200,11 +203,15 @@ const SessionPlayer = {
   },
 
   _timerRunning: false,
+  _countingDown: false,
 
   _breathingInterval: null,
 
   async _startTimer() {
-    this._timerRunning = true;
+    // Guard against double-start
+    if (this._timerRunning || this._countingDown) return;
+
+    this._countingDown = true;
     const pose = this._dayData.poses[this._currentPoseIndex];
     const circumference = 2 * Math.PI * 98;
     const circle = document.getElementById('timer-circle');
@@ -213,28 +220,54 @@ const SessionPlayer = {
 
     circle.classList.add('active');
 
-    // Replace button with pause/skip immediately
+    // Replace controls with skip only during countdown (no pause yet)
     document.getElementById('session-controls').innerHTML = `
-      <button class="btn btn-secondary" onclick="SessionPlayer._togglePause()" id="pause-btn">Pause</button>
       <button class="btn btn-ghost" onclick="SessionPlayer._skipTimer()">Skip</button>
     `;
 
     // 3-2-1 countdown inside the timer circle
     for (let n = 3; n >= 1; n--) {
+      // Bail out if session was exited or skipped during countdown
+      if (!this._countingDown || !document.getElementById('timer-display')) {
+        this._countingDown = false;
+        return;
+      }
       display.textContent = n;
-      display.classList.add('countdown-pop');
       label.textContent = 'Get ready...';
       SoundManager.click();
-      await new Promise(r => setTimeout(r, 800));
+      // Force reflow so animation replays reliably
+      void display.offsetWidth;
       display.classList.remove('countdown-pop');
+      void display.offsetWidth;
+      display.classList.add('countdown-pop');
+      await new Promise(r => setTimeout(r, 800));
     }
 
-    // Start breathing in the timer circle
-    this._startBreathingInCircle();
+    // Countdown done — bail if we navigated away or skipped
+    if (!this._countingDown || !document.getElementById('timer-display')) {
+      this._countingDown = false;
+      return;
+    }
 
-    // Start the actual timer
+    this._countingDown = false;
+    this._timerRunning = true;
+
+    // Remove countdown animation class
+    display.classList.remove('countdown-pop');
+
+    // Show pause/skip controls now that the real timer is starting
+    document.getElementById('session-controls').innerHTML = `
+      <button class="btn btn-secondary" onclick="SessionPlayer._togglePause()" id="pause-btn">Pause</button>
+      <button class="btn btn-ghost" onclick="SessionPlayer._skipTimer()">Skip</button>
+    `;
+
+    // Set the time display BEFORE starting the timer to avoid flicker
     display.textContent = Timer.formatTime(this._getDuration(pose));
 
+    // Start breathing guide
+    this._startBreathingInCircle();
+
+    // Start the actual timer (first onTick fires synchronously, so display is already set)
     Timer.start(this._getDuration(pose),
       (remaining, total) => {
         const d = document.getElementById('timer-display');
@@ -290,13 +323,18 @@ const SessionPlayer = {
   },
 
   _togglePause() {
+    // Can't pause if timer isn't actually running
+    if (!this._timerRunning || this._countingDown) return;
+
     if (Timer.isPaused()) {
       Timer.resume();
-      document.getElementById('pause-btn').textContent = 'Pause';
+      const btn = document.getElementById('pause-btn');
+      if (btn) btn.textContent = 'Pause';
       this._startBreathingInCircle();
     } else {
       Timer.pause();
-      document.getElementById('pause-btn').textContent = 'Resume';
+      const btn = document.getElementById('pause-btn');
+      if (btn) btn.textContent = 'Resume';
       this._stopBreathingInCircle();
       const label = document.getElementById('timer-label');
       if (label) {
@@ -307,6 +345,9 @@ const SessionPlayer = {
   },
 
   _skipTimer() {
+    // If still in countdown, just mark it done and complete immediately
+    this._countingDown = false;
+    this._timerRunning = false;
     Timer.stop();
     this._stopBreathingInCircle();
     this._onTimerComplete();
@@ -314,6 +355,7 @@ const SessionPlayer = {
 
   _onTimerComplete() {
     this._timerRunning = false;
+    this._countingDown = false;
     this._stopBreathingInCircle();
     const circle = document.getElementById('timer-circle');
     if (circle) {
@@ -685,6 +727,8 @@ const SessionPlayer = {
       return;
     }
     if (confirm('Leave this session? Your progress won\'t be saved.')) {
+      this._countingDown = false;
+      this._timerRunning = false;
       Timer.stop();
       this._stopBreathingInCircle();
       this._releaseWakeLock();
