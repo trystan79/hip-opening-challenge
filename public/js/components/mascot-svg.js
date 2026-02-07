@@ -125,12 +125,12 @@ const MascotSVG = {
           <circle cx="70" cy="36" r="7" fill="#8B5E3C" class="mascot-ear-right"/>
           <circle cx="70" cy="36" r="4" fill="#D4A574"/>
           <!-- Eyes -->
-          <circle cx="43" cy="37" r="4" fill="white" class="mascot-eye-left"/>
-          <circle cx="57" cy="37" r="4" fill="white" class="mascot-eye-right"/>
-          <circle cx="43.5" cy="37" r="2.5" fill="#1A1A1A"/>
-          <circle cx="57.5" cy="37" r="2.5" fill="#1A1A1A"/>
-          <circle cx="44" cy="36" r="0.8" fill="white"/>
-          <circle cx="58" cy="36" r="0.8" fill="white"/>
+          <circle cx="43" cy="37" r="3.2" fill="#F5EDE4" class="mascot-eye-left"/>
+          <circle cx="57" cy="37" r="3.2" fill="#F5EDE4" class="mascot-eye-right"/>
+          <circle cx="43.5" cy="37.2" r="2" fill="#3D2B1F"/>
+          <circle cx="57.5" cy="37.2" r="2" fill="#3D2B1F"/>
+          <circle cx="44" cy="36.5" r="0.7" fill="#F5EDE4"/>
+          <circle cx="58" cy="36.5" r="0.7" fill="#F5EDE4"/>
           <!-- Nose -->
           <ellipse cx="50" cy="43" rx="4" ry="2.5" fill="#6B3F23"/>
           <circle cx="48" cy="43" r="1" fill="#1A1A1A"/>
