@@ -80,6 +80,9 @@ const SettingsScreen = {
               4-segment days use shorter holds. You can also adjust per-pose during a session.
             </p>
           </div>
+          <button class="btn btn-ghost btn-full" style="margin-top:12px;color:var(--text-muted);font-size:13px;" onclick="SettingsScreen._resetTimeOverrides()">
+            Reset All Per-Pose Time Overrides
+          </button>
         </div>
 
         <div class="card">
@@ -210,6 +213,18 @@ const SettingsScreen = {
       }).then(() => alert('PIN updated!'));
     } else if (newPin) {
       alert('PIN must be exactly 4 digits.');
+    }
+  },
+
+  async _resetTimeOverrides() {
+    if (confirm('Reset all per-pose time overrides? Poses will use the default time for your difficulty level.')) {
+      const result = await API.resetTimeOverrides();
+      XPToast.show(0);
+      const toast = document.querySelector('.xp-toast');
+      if (toast) {
+        toast.querySelector('.xp-amount').textContent = '\u2713';
+        toast.querySelector('.xp-label').textContent = `${result.deleted || 0} override${result.deleted === 1 ? '' : 's'} cleared`;
+      }
     }
   },
 

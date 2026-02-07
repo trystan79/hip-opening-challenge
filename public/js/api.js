@@ -90,6 +90,10 @@ const API = {
   resetProgress() { return this.post('/reset'); },
   getMuscles() { return this.get('/muscles'); },
   setPoseTimeOverride(poseId, seconds) { return this.post('/pose-time-override', { pose_id: poseId, override_seconds: seconds }); },
+  resetTimeOverrides() {
+    const userId = Session.getUser();
+    return fetch(`/api/pose-time-overrides?userId=${userId}`, { method: 'DELETE' }).then(r => r.json());
+  },
   advanceCycle(difficulty, routineId) { return this.post('/cycle/advance', { difficulty, routine_id: routineId || 1 }); },
   getShuffle(mode) { return this.get(`/shuffle?mode=${mode}`); },
   getSimilarPoses(poseId) { return this.get(`/poses/${poseId}/similar`); },

@@ -549,6 +549,15 @@ router.post('/pose-time-override', (req, res) => {
   res.json({ success: true });
 });
 
+router.delete('/pose-time-overrides', (req, res) => {
+  const userId = getUserId(req);
+  if (!userId) return res.status(400).json({ error: 'userId is required' });
+
+  const db = getDB();
+  const result = db.prepare('DELETE FROM user_pose_time_override WHERE user_id = ?').run(userId);
+  res.json({ success: true, deleted: result.changes });
+});
+
 // ===== POSE SUBSTITUTIONS =====
 
 router.get('/poses/:id/similar', (req, res) => {
