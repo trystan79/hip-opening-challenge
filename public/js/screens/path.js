@@ -1,4 +1,9 @@
 const PathScreen = {
+  _toggle(idx) {
+    const sections = document.querySelectorAll('.routine-section');
+    if (sections[idx]) sections[idx].classList.toggle('expanded');
+  },
+
   async render(container) {
     container.innerHTML = Skeleton.pathScreen();
 
@@ -36,44 +41,49 @@ const PathScreen = {
       const weekNums = Object.keys(weekMap).map(Number).sort((a, b) => a - b);
 
       return `
-        <div style="margin-bottom:32px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div class="routine-section" style="margin-bottom:32px;">
+          <div class="routine-header" onclick="PathScreen._toggle(${idx})" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;cursor:pointer;">
             <h2 style="border-left:4px solid ${routine.color};padding-left:10px;">${routine.name}</h2>
-            <span class="badge badge-accent">Cycle ${cycle} &bull; ${totalCompleted}/${totalDays}</span>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="badge badge-accent">Cycle ${cycle} &bull; ${totalCompleted}/${totalDays}</span>
+              <span class="routine-chevron">&#9660;</span>
+            </div>
           </div>
 
           <div class="progress-bar" style="margin-bottom:20px;">
             <div class="progress-bar-fill" style="width:${(totalCompleted / totalDays) * 100}%"></div>
           </div>
 
-          ${weekNums.map(wk => `
-            <div class="path-week">
-              <div class="path-week-header">
-                <div class="path-week-number week-${Math.min(wk, 3)}">${wk}</div>
-                <div>
-                  <div class="path-week-title">Week ${wk}</div>
-                  <div class="path-week-subtitle">${weekMap[wk].length} days</div>
+          <div class="routine-content">
+            ${weekNums.map(wk => `
+              <div class="path-week">
+                <div class="path-week-header">
+                  <div class="path-week-number week-${Math.min(wk, 3)}">${wk}</div>
+                  <div>
+                    <div class="path-week-title">Week ${wk}</div>
+                    <div class="path-week-subtitle">${weekMap[wk].length} days</div>
+                  </div>
+                </div>
+
+                <div class="path-days">
+                  ${weekMap[wk].map(day => {
+                    const statusIcon = day.status === 'completed' ? '\u2713' : day.status === 'available' ? '\u25B6' : '\uD83D\uDD12';
+                    const poseNames = day.poses.map(p => p.name).join(' + ');
+                    return `
+                      <div class="path-day ${day.status}" onclick="${day.status !== 'locked' ? `App.navigate('#/session/${day.id}')` : ''}">
+                        <div class="day-number">${day.sort_order || day.id}</div>
+                        <div class="day-info">
+                          <div class="day-theme">${day.theme}</div>
+                          <div class="day-poses">${poseNames}</div>
+                        </div>
+                        <div class="day-status-icon">${statusIcon}</div>
+                      </div>
+                    `;
+                  }).join('')}
                 </div>
               </div>
-
-              <div class="path-days">
-                ${weekMap[wk].map(day => {
-                  const statusIcon = day.status === 'completed' ? '\u2713' : day.status === 'available' ? '\u25B6' : '\uD83D\uDD12';
-                  const poseNames = day.poses.map(p => p.name).join(' + ');
-                  return `
-                    <div class="path-day ${day.status}" onclick="${day.status !== 'locked' ? `App.navigate('#/session/${day.id}')` : ''}">
-                      <div class="day-number">${day.sort_order || day.id}</div>
-                      <div class="day-info">
-                        <div class="day-theme">${day.theme}</div>
-                        <div class="day-poses">${poseNames}</div>
-                      </div>
-                      <div class="day-status-icon">${statusIcon}</div>
-                    </div>
-                  `;
-                }).join('')}
-              </div>
-            </div>
-          `).join('')}
+            `).join('')}
+          </div>
         </div>
       `;
     });

@@ -185,7 +185,7 @@ const SessionPlayer = {
         </div>
 
         <div class="session-controls" id="session-controls">
-          <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px;">
+          <div class="time-adjust-row" style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px;">
             <button class="btn btn-secondary" style="width:64px;padding:8px;font-size:13px;" onclick="SessionPlayer._adjustTime(-30)">\u221230s</button>
             <span style="font-size:18px;font-weight:700;min-width:64px;text-align:center;" id="time-adj-display">${Timer.formatTime(this._getDuration(pose))}</span>
             <button class="btn btn-secondary" style="width:64px;padding:8px;font-size:13px;" onclick="SessionPlayer._adjustTime(30)">+30s</button>

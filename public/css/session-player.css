@@ -371,32 +371,36 @@
   .session-player {
     padding: 8px 16px;
     padding-top: calc(8px + env(safe-area-inset-top, 0px));
-    padding-bottom: 16px;
+    padding-bottom: 8px;
   }
 
-  .session-header { margin-bottom: 12px; }
-  .session-progress-bar { margin-bottom: 16px; }
+  /* Hide non-essential elements */
+  .session-progress-bar { display: none; }
+  #pose-details { display: none; }
+  .time-adjust-row { display: none !important; }
 
-  .pose-display { margin-bottom: 12px; }
-  .pose-display .pose-title { font-size: 22px; }
+  .session-header { margin-bottom: 8px; }
 
-  .timer-container { margin: 16px 0; }
-  .timer-circle { width: 140px; height: 140px; }
-  .timer-ring { width: 148px; height: 148px; }
+  .pose-display { margin-bottom: 4px; }
+  .pose-display .pose-title { font-size: 20px; }
+  .pose-display .pose-side { font-size: 14px; margin-bottom: 4px; }
+
+  .timer-container { margin: 8px 0; }
+  .timer-circle { width: 120px; height: 120px; }
+  .timer-ring { width: 128px; height: 128px; }
   .timer-ring circle { stroke-width: 4; }
-  .timer-time { font-size: 36px; }
-  .timer-label { font-size: 12px; }
+  .timer-time { font-size: 32px; }
+  .timer-label { font-size: 11px; }
 
-  .cues-container { margin: 12px 0; }
-  .session-controls { margin-top: 12px; }
+  #action-area .btn { margin: 8px 0 !important; }
 
-  .breathing-circle { width: 40px; height: 40px; }
-  .breathing-container { margin: 8px 0; }
+  .session-controls { margin-top: 8px; }
 
-  .checkin-container { padding: 12px 0; }
+  /* Check-in & completion stay compact but visible */
+  .checkin-container { padding: 8px 0; }
   .checkin-btn { width: 40px; height: 40px; font-size: 16px; }
 
-  .completion-screen { padding: 20px 0; }
-  .completion-stats { gap: 16px; margin: 16px 0; }
+  .completion-screen { padding: 16px 0; }
+  .completion-stats { gap: 16px; margin: 12px 0; }
   .completion-stat-value { font-size: 24px; }
 }

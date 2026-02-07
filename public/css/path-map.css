@@ -131,3 +131,26 @@
 .path-day.completed .day-status-icon { color: var(--green); }
 .path-day.available .day-status-icon { color: var(--accent); }
 .path-day.locked .day-status-icon { color: var(--text-muted); }
+
+/* Collapsible routine sections */
+.routine-header {
+  user-select: none;
+  -webkit-user-select: none;
+}
+.routine-chevron {
+  font-size: 12px;
+  color: var(--text-muted);
+  transition: transform 0.3s ease;
+  display: inline-block;
+}
+.routine-section.expanded .routine-chevron {
+  transform: rotate(180deg);
+}
+.routine-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+}
+.routine-section.expanded .routine-content {
+  max-height: 5000px;
+}
