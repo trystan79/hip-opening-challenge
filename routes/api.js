@@ -657,9 +657,11 @@ router.post('/routines/:id/join', (req, res) => {
       db.prepare('UPDATE user_routine SET is_active = 1 WHERE id = ?').run(existing.id);
     }
   } else {
+    const currentUser = db.prepare('SELECT difficulty FROM user WHERE id = ?').get(userId);
+    const diff = (currentUser && currentUser.difficulty) || 'easy';
     db.prepare(
-      'INSERT INTO user_routine (user_id, routine_id) VALUES (?, ?)'
-    ).run(userId, routineId);
+      'INSERT INTO user_routine (user_id, routine_id, difficulty) VALUES (?, ?, ?)'
+    ).run(userId, routineId, diff);
   }
 
   // Initialize day progress for this routine if none exists
