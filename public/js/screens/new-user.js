@@ -8,8 +8,8 @@ const NewUserScreen = {
       <div class="screen-enter" style="padding-top:24px;">
         <button class="btn btn-ghost" onclick="App.navigate('#/login')" style="margin-bottom:16px;">\u2190 Back</button>
 
-        <h2 style="margin-bottom:4px;">Join the Challenge</h2>
-        <p style="margin-bottom:24px;">Start your hip flexibility journey</p>
+        <h2 style="margin-bottom:4px;">Create Account</h2>
+        <p style="margin-bottom:24px;">Set up your profile, then pick a routine</p>
 
         <div class="section">
           <div class="section-title">Your Name</div>
@@ -30,7 +30,7 @@ const NewUserScreen = {
         <div id="create-error" style="color:var(--red);font-size:13px;margin-bottom:12px;display:none;"></div>
 
         <button class="btn btn-primary btn-full" onclick="NewUserScreen._create()">
-          Start Challenge
+          Create Account
         </button>
       </div>
     `;
@@ -65,7 +65,7 @@ const NewUserScreen = {
       const user = await API.createUser(name, this._selectedMascot, pin);
       Session.setUser(user.id);
       Session.setMascot(user.mascot);
-      App.navigate('#/home');
+      App.navigate('#/routines');
     } catch (err) {
       errorEl.textContent = err.message.includes('10') ? 'Maximum 10 users reached.' : 'Failed to create account. Try again.';
       errorEl.style.display = 'block';

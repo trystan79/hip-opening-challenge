@@ -157,18 +157,6 @@ router.post('/users', (req, res) => {
   ).run(name.trim(), mascot || 'fox', pin, isAdmin);
   const userId = result.lastInsertRowid;
 
-  // Auto-enroll in routine 1
-  db.prepare('INSERT INTO user_routine (user_id, routine_id) VALUES (?, 1)').run(userId);
-
-  // Initialize day progress for routine 1: Day 1 available, rest locked
-  const days = db.prepare('SELECT id FROM day WHERE routine_id = 1 ORDER BY id').all();
-  for (const day of days) {
-    const status = day.id === days[0].id ? 'available' : 'locked';
-    db.prepare(
-      'INSERT INTO user_day_progress (user_id, day_id, status, routine_id) VALUES (?, ?, ?, 1)'
-    ).run(userId, day.id, status);
-  }
-
   const user = db.prepare('SELECT * FROM user WHERE id = ?').get(userId);
   user.preferences = JSON.parse(user.preferences || '{}');
   res.json(user);

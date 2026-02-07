@@ -46,6 +46,12 @@ function initDB() {
           db.exec(legsSeed);
         }
 
+        const shoulderSeedPath = path.join(__dirname, 'seed-shoulder.sql');
+        if (fs.existsSync(shoulderSeedPath)) {
+          const shoulderSeed = fs.readFileSync(shoulderSeedPath, 'utf-8');
+          db.exec(shoulderSeed);
+        }
+
         _save();
         console.log('Fresh database initialized.');
       }
@@ -64,6 +70,12 @@ function initDB() {
       if (fs.existsSync(legsSeedPath)) {
         const legsSeed = fs.readFileSync(legsSeedPath, 'utf-8');
         db.exec(legsSeed);
+      }
+
+      const shoulderSeedPath = path.join(__dirname, 'seed-shoulder.sql');
+      if (fs.existsSync(shoulderSeedPath)) {
+        const shoulderSeed = fs.readFileSync(shoulderSeedPath, 'utf-8');
+        db.exec(shoulderSeed);
       }
 
       _save();
@@ -319,6 +331,23 @@ function _runMigrations() {
   } catch (e) {
     // routine table might not exist yet in edge cases; skip
   }
+
+  // Phase 6: Load shoulder rehab routine if routine 3 doesn't exist
+  try {
+    const stmt = db.prepare("SELECT id FROM routine WHERE id = 3");
+    stmt.bind([]);
+    const hasRoutine3 = stmt.step();
+    stmt.free();
+    if (!hasRoutine3) {
+      const seedPath = path.join(__dirname, 'seed-shoulder.sql');
+      if (fs.existsSync(seedPath)) {
+        console.log('  Loading shoulder rehab routine...');
+        const seedSql = fs.readFileSync(seedPath, 'utf-8');
+        db.exec(seedSql);
+        changed = true;
+      }
+    }
+  } catch (e) { /* routine table may not exist */ }
 
   // Ensure at least one admin exists — promote first user if none
   try {
