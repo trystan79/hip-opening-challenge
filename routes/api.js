@@ -814,7 +814,7 @@ router.post('/sessions/:id/complete', (req, res) => {
 
   const db = getDB();
   const sessionId = req.params.id;
-  const { pain_rating, pain_location, difficulty_rating, flexibility_rating } = req.body;
+  const { pain_rating, pain_location, difficulty_rating, flexibility_rating, total_hold_time, total_expected_time } = req.body;
 
   const session = db.prepare('SELECT * FROM session_log WHERE id = ?').get(sessionId);
   if (!session) return res.status(404).json({ error: 'Session not found' });
@@ -825,6 +825,18 @@ router.post('/sessions/:id/complete', (req, res) => {
 
   const day = db.prepare('SELECT * FROM day WHERE id = ?').get(session.day_id);
   let xpEarned = 20 + (day.week - 1) * 5; // Week 1: 20, Week 2: 25, Week 3: 30
+
+  // Time-based XP nudge: small bonus for extra time, small penalty for cutting short
+  let timeBonus = 0;
+  if (total_hold_time != null && total_expected_time != null && total_expected_time > 0) {
+    const timeDiff = total_hold_time - total_expected_time;
+    if (timeDiff >= 180) timeBonus = 5;
+    else if (timeDiff >= 120) timeBonus = 3;
+    else if (timeDiff >= 60) timeBonus = 2;
+    else if (timeDiff <= -120) timeBonus = -3;
+    else if (timeDiff <= -60) timeBonus = -2;
+    xpEarned = Math.max(Math.round(xpEarned / 2), xpEarned + timeBonus);
+  }
 
   // Variable bonus XP
   let bonusXP = 0;
@@ -887,6 +899,7 @@ router.post('/sessions/:id/complete', (req, res) => {
       xp_earned: totalXpEarned,
       bonus_xp: bonusXP,
       bonus_type: bonusType,
+      time_bonus: timeBonus,
       total_xp: newXP,
       new_level: newLevel,
       streak: newStreak,
@@ -971,6 +984,7 @@ router.post('/sessions/:id/complete', (req, res) => {
     xp_earned: totalXpEarned,
     bonus_xp: bonusXP,
     bonus_type: bonusType,
+    time_bonus: timeBonus,
     total_xp: newXP,
     new_level: newLevel,
     streak: newStreak,

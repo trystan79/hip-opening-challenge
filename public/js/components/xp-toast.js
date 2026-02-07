@@ -1,11 +1,16 @@
 const XPToast = {
-  show(xp) {
+  show(xp, timeBonus) {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
     toast.className = 'xp-toast';
+    const tagHtml = timeBonus > 0
+      ? `<span class="xp-time-tag bonus">+${timeBonus} time</span>`
+      : timeBonus < 0
+        ? `<span class="xp-time-tag penalty">${timeBonus}</span>`
+        : '';
     toast.innerHTML = `
       <span class="xp-amount">+${xp}</span>
-      <span class="xp-label">XP Earned</span>
+      <span class="xp-label">XP Earned${tagHtml}</span>
     `;
     container.appendChild(toast);
     setTimeout(() => toast.remove(), 3000);

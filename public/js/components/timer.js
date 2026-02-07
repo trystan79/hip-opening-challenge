@@ -55,6 +55,14 @@ const Timer = {
 
   isPaused() { return this._paused; },
 
+  getElapsed() {
+    let elapsed = this._elapsed;
+    if (this._startedAt && !this._paused) {
+      elapsed += (Date.now() - this._startedAt) / 1000;
+    }
+    return Math.min(Math.round(elapsed), this._total);
+  },
+
   stop() {
     if (this._interval) {
       clearInterval(this._interval);

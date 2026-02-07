@@ -7,6 +7,9 @@ const SessionPlayer = {
   _progressionLevel: 'full',
   _isShuffle: false,
   _wakeLock: null,
+  _totalExpectedTime: 0,
+  _totalActualTime: 0,
+  _poseSkipped: false,
 
   async _requestWakeLock() {
     try {
@@ -124,6 +127,9 @@ const SessionPlayer = {
     this._currentPoseIndex = 0;
     this._currentSide = 'A';
     this._phase = 'pose';
+    this._totalExpectedTime = 0;
+    this._totalActualTime = 0;
+    this._poseSkipped = false;
     this._renderPose();
   },
 
@@ -347,6 +353,8 @@ const SessionPlayer = {
   _skipTimer() {
     // If still in countdown, just mark it done and complete immediately
     this._countingDown = false;
+    this._poseSkipped = true;
+    this._totalActualTime += Timer.getElapsed();
     this._timerRunning = false;
     Timer.stop();
     this._stopBreathingInCircle();
@@ -357,6 +365,16 @@ const SessionPlayer = {
     this._timerRunning = false;
     this._countingDown = false;
     this._stopBreathingInCircle();
+
+    // Track time for XP calculation
+    const pose = this._dayData.poses[this._currentPoseIndex];
+    const expected = this._getDuration(pose);
+    this._totalExpectedTime += expected;
+    if (!this._poseSkipped) {
+      this._totalActualTime += expected;
+    }
+    this._poseSkipped = false;
+
     const circle = document.getElementById('timer-circle');
     if (circle) {
       circle.classList.remove('active');
@@ -526,11 +544,13 @@ const SessionPlayer = {
         difficulty_rating: this._ratings.difficulty,
         flexibility_rating: this._ratings.flexibility,
         pain_rating: this._ratings.pain,
-        pain_location: this._painLocation
+        pain_location: this._painLocation,
+        total_hold_time: this._totalActualTime,
+        total_expected_time: this._totalExpectedTime
       });
 
       // Show XP toast & play sounds
-      XPToast.show(result.xp_earned);
+      XPToast.show(result.xp_earned, result.time_bonus);
       SoundManager.xpEarned();
       SoundManager.sessionComplete();
       Confetti.burst();
@@ -648,7 +668,7 @@ const SessionPlayer = {
           <div class="completion-stats">
             <div class="completion-stat">
               <div class="completion-stat-value" style="color:var(--green);">+${result.xp_earned}</div>
-              <div class="completion-stat-label">XP</div>
+              <div class="completion-stat-label">XP${result.time_bonus > 0 ? ' <span class="xp-time-tag bonus">+' + result.time_bonus + ' time</span>' : ''}${result.time_bonus < 0 ? ' <span class="xp-time-tag penalty">' + result.time_bonus + '</span>' : ''}</div>
             </div>
             <div class="completion-stat">
               <div class="completion-stat-value" style="color:var(--yellow);">${result.streak}</div>

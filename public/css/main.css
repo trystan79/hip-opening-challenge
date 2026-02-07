@@ -260,7 +260,7 @@ input::placeholder {
 /* Toast container */
 #toast-container {
   position: fixed;
-  top: 20px;
+  top: calc(20px + env(safe-area-inset-top, 0px));
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;
@@ -442,4 +442,34 @@ input::placeholder {
   [data-theme="system"] .cal-high {
     color: #fff;
   }
+}
+
+/* ===== Dynamic viewport height ===== */
+@supports (min-height: 100dvh) {
+  body { min-height: 100dvh; }
+  #app { min-height: 100dvh; }
+  #screen-container { min-height: 100dvh; }
+}
+
+/* ===== Landscape (phones only) ===== */
+@media (orientation: landscape) and (max-height: 500px) {
+  :root { --nav-height: 44px; }
+
+  #screen-container {
+    padding: 8px 16px;
+    padding-top: calc(8px + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 12px);
+  }
+
+  h1 { font-size: 22px; }
+  h2 { font-size: 18px; }
+
+  .mascot-container { padding: 8px; }
+  .mascot-container svg { width: 80px; height: 80px; }
+
+  .stat-grid { gap: 8px; }
+  .stat-item { padding: 8px 6px; }
+  .stat-value { font-size: 20px; }
+
+  .card { padding: 14px; margin-bottom: 10px; }
 }
