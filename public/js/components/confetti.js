@@ -4,7 +4,7 @@ const Confetti = {
     container.className = 'confetti-container';
     const colors = ['var(--accent)', 'var(--green)', 'var(--yellow)', 'var(--orange)', 'var(--purple)'];
 
-    for (let i = 0; i < 25; i++) {
+    for (let i = 0; i < 18; i++) {
       const particle = document.createElement('span');
       particle.className = 'confetti-particle';
       const color = colors[Math.floor(Math.random() * colors.length)];

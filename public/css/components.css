@@ -73,8 +73,9 @@
   align-items: center;
   gap: 12px;
   box-shadow: var(--shadow-lg);
-  animation: toastIn 0.4s ease, toastOut 0.4s ease 2.6s;
+  animation: toastIn 0.4s ease, toastOut 0.4s ease 2.6s forwards;
   pointer-events: auto;
+  will-change: transform, opacity;
 }
 .xp-toast .xp-amount {
   font-size: 24px;
@@ -87,12 +88,12 @@
 }
 
 @keyframes toastIn {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translate3d(0, -20px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 @keyframes toastOut {
-  from { opacity: 1; }
-  to { opacity: 0; transform: translateY(-20px); }
+  from { opacity: 1; transform: translate3d(0, 0, 0); }
+  to { opacity: 0; transform: translate3d(0, -20px, 0); }
 }
 
 /* Level up toast */
@@ -104,8 +105,9 @@
   border-radius: var(--radius-lg);
   padding: 20px;
   box-shadow: var(--shadow-lg);
-  animation: toastIn 0.4s ease, toastOut 0.4s ease 3.6s;
+  animation: toastIn 0.4s ease, toastOut 0.4s ease 3.6s forwards;
   pointer-events: auto;
+  will-change: transform, opacity;
 }
 .level-toast .level-number {
   font-size: 32px;
@@ -254,11 +256,12 @@
   position: absolute;
   top: -10px;
   opacity: 0;
+  will-change: transform, opacity;
 }
 @keyframes confettiFall {
-  0% { opacity: 1; transform: translateY(0) translateX(0) rotate(0deg); }
+  0% { opacity: 1; transform: translate3d(0, 0, 0) rotate(0deg); }
   80% { opacity: 1; }
-  100% { opacity: 0; transform: translateY(100vh) translateX(var(--drift)) rotate(var(--rotation)); }
+  100% { opacity: 0; transform: translate3d(var(--drift), 100vh, 0) rotate(var(--rotation)); }
 }
 
 /* Streak Warning */
@@ -339,8 +342,9 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   color: var(--text-primary);
-  animation: achievementIn 0.5s ease, toastOut 0.4s ease 3.6s;
+  animation: achievementIn 0.5s ease, toastOut 0.4s ease 3.6s forwards;
   pointer-events: auto;
+  will-change: transform, opacity;
 }
 @keyframes achievementIn {
   0% { opacity: 0; transform: scale(0.8) translateY(-20px); }

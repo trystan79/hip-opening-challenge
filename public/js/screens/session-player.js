@@ -621,7 +621,7 @@ const SessionPlayer = {
     const toast = document.createElement('div');
     toast.className = 'competitive-toast';
     toast.innerHTML = `<span>${message}</span>`;
-    toast.style.cssText = 'background:var(--bg-card);border:2px solid var(--purple);border-radius:var(--radius-lg);padding:14px 18px;box-shadow:var(--shadow-lg);color:var(--text-primary);font-size:14px;font-weight:600;animation:toastIn 0.4s ease,toastOut 0.4s ease 3.6s;pointer-events:auto;';
+    toast.style.cssText = 'background:var(--bg-card);border:2px solid var(--purple);border-radius:var(--radius-lg);padding:14px 18px;box-shadow:var(--shadow-lg);color:var(--text-primary);font-size:14px;font-weight:600;animation:toastIn 0.4s ease,toastOut 0.4s ease 3.6s forwards;pointer-events:auto;will-change:transform,opacity;';
     container.appendChild(toast);
     setTimeout(() => toast.remove(), 4200);
   },
@@ -675,25 +675,25 @@ const SessionPlayer = {
       </div>
     `;
 
-    // Animate stat counters
+    // Animate stat counters using rAF for smooth rendering
     setTimeout(() => {
       document.querySelectorAll('.completion-stat-value').forEach(el => {
         const text = el.textContent;
         const match = text.match(/[+-]?(\d+)/);
         if (!match) return;
         const target = parseInt(match[1]);
-        const prefix = text.replace(match[1], '').replace(/\d/g, '');
-        let current = 0;
-        const steps = 30;
-        const increment = target / steps;
-        const interval = setInterval(() => {
-          current += increment;
-          if (current >= target) {
-            current = target;
-            clearInterval(interval);
-          }
-          el.textContent = prefix.startsWith('+') ? `+${Math.round(current)}` : `${Math.round(current)}`;
-        }, 30);
+        const prefix = text.startsWith('+') ? '+' : '';
+        const duration = 900;
+        const start = performance.now();
+        function tick(now) {
+          const elapsed = now - start;
+          const progress = Math.min(elapsed / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          const current = Math.round(eased * target);
+          el.textContent = `${prefix}${current}`;
+          if (progress < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
       });
     }, 200);
   },
