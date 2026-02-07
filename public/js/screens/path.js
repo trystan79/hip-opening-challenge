@@ -1,6 +1,6 @@
 const PathScreen = {
   async render(container) {
-    container.innerHTML = '<div class="screen-enter"><p style="text-align:center;padding-top:40px;">Loading...</p></div>';
+    container.innerHTML = Skeleton.pathScreen();
 
     const [days, user] = await Promise.all([API.getDays(), API.getUser()]);
     const cycle = user.current_cycle || 1;

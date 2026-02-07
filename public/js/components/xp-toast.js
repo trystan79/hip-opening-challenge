@@ -11,6 +11,19 @@ const XPToast = {
     setTimeout(() => toast.remove(), 3000);
   },
 
+  showBonus(xp, type) {
+    const labels = { critical: 'Critical Stretch!', bonus: 'Bonus!', lucky: 'Lucky!' };
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = 'xp-toast bonus-toast';
+    toast.innerHTML = `
+      <span class="xp-amount bonus-glow">+${xp}</span>
+      <span class="xp-label">${labels[type] || 'Bonus XP'}</span>
+    `;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  },
+
   showLevelUp(level) {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');

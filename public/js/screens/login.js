@@ -1,6 +1,6 @@
 const LoginScreen = {
   async render(container) {
-    container.innerHTML = '<div class="screen-enter" style="text-align:center;padding-top:40px;"><p>Loading...</p></div>';
+    container.innerHTML = Skeleton.homeScreen();
 
     try {
       const users = await API.getUsers();

@@ -8,7 +8,7 @@ const SessionPlayer = {
   _isShuffle: false,
 
   async render(container, dayId, isShuffle) {
-    container.innerHTML = '<div class="session-player"><p style="text-align:center;padding-top:40px;">Loading...</p></div>';
+    container.innerHTML = Skeleton.sessionIntro();
 
     const dayData = await API.getDay(dayId);
     this._dayData = dayData;
@@ -58,7 +58,7 @@ const SessionPlayer = {
           <h1>${day.theme}</h1>
           <p style="margin-top:8px;">${day.description}</p>
 
-          <div style="margin-top:24px;">
+          <div class="card-stagger" style="margin-top:24px;">
             ${day.poses.map((p, i) => `
               <div class="pose-card" style="position:relative;">
                 <div class="pose-number">${i + 1}</div>
@@ -139,8 +139,6 @@ const SessionPlayer = {
           </div>
         </div>
 
-        <div id="breathing-area"></div>
-
         <div id="action-area"></div>
 
         <div id="pose-details">
@@ -173,26 +171,44 @@ const SessionPlayer = {
 
   _timerRunning: false,
 
-  _startTimer() {
+  _breathingInterval: null,
+
+  async _startTimer() {
     this._timerRunning = true;
     const pose = this._dayData.poses[this._currentPoseIndex];
     const circumference = 2 * Math.PI * 98;
+    const circle = document.getElementById('timer-circle');
+    const display = document.getElementById('timer-display');
+    const label = document.getElementById('timer-label');
 
-    document.getElementById('timer-circle').classList.add('active');
-    document.getElementById('timer-label').textContent = 'Hold...';
+    circle.classList.add('active');
 
-    // Start breathing guide
-    BreathingGuide.render(document.getElementById('breathing-area'));
-
-    // Replace button with pause/skip
+    // Replace button with pause/skip immediately
     document.getElementById('session-controls').innerHTML = `
       <button class="btn btn-secondary" onclick="SessionPlayer._togglePause()" id="pause-btn">Pause</button>
       <button class="btn btn-ghost" onclick="SessionPlayer._skipTimer()">Skip</button>
     `;
 
+    // 3-2-1 countdown inside the timer circle
+    for (let n = 3; n >= 1; n--) {
+      display.textContent = n;
+      display.classList.add('countdown-pop');
+      label.textContent = 'Get ready...';
+      SoundManager.click();
+      await new Promise(r => setTimeout(r, 800));
+      display.classList.remove('countdown-pop');
+    }
+
+    // Start breathing in the timer circle
+    this._startBreathingInCircle();
+
+    // Start the actual timer
+    display.textContent = Timer.formatTime(this._getDuration(pose));
+
     Timer.start(this._getDuration(pose),
       (remaining, total) => {
-        document.getElementById('timer-display').textContent = Timer.formatTime(remaining);
+        const d = document.getElementById('timer-display');
+        if (d) d.textContent = Timer.formatTime(remaining);
         const progress = (total - remaining) / total;
         const offset = circumference * (1 - progress);
         const ring = document.getElementById('ring-fill');
@@ -204,34 +220,81 @@ const SessionPlayer = {
     );
   },
 
+  _startBreathingInCircle() {
+    this._stopBreathingInCircle();
+    const inhale = 4;
+    const exhale = 8;
+    const total = inhale + exhale;
+    let tick = 0;
+
+    const circle = document.getElementById('timer-circle');
+    if (circle) circle.classList.add('breathing');
+
+    const update = () => {
+      const label = document.getElementById('timer-label');
+      if (!label) return;
+      const pos = tick % total;
+      if (pos < inhale) {
+        const countdown = inhale - pos;
+        label.textContent = `Breathe in... ${countdown}`;
+        label.style.color = 'var(--green)';
+      } else {
+        const countdown = exhale - (pos - inhale);
+        label.textContent = `Breathe out... ${countdown}`;
+        label.style.color = 'var(--green)';
+      }
+      tick++;
+    };
+
+    update();
+    this._breathingInterval = setInterval(update, 1000);
+  },
+
+  _stopBreathingInCircle() {
+    if (this._breathingInterval) {
+      clearInterval(this._breathingInterval);
+      this._breathingInterval = null;
+    }
+    const circle = document.getElementById('timer-circle');
+    if (circle) circle.classList.remove('breathing');
+  },
+
   _togglePause() {
     if (Timer.isPaused()) {
       Timer.resume();
       document.getElementById('pause-btn').textContent = 'Pause';
-      document.getElementById('timer-label').textContent = 'Hold...';
+      this._startBreathingInCircle();
     } else {
       Timer.pause();
       document.getElementById('pause-btn').textContent = 'Resume';
-      document.getElementById('timer-label').textContent = 'Paused';
+      this._stopBreathingInCircle();
+      const label = document.getElementById('timer-label');
+      if (label) {
+        label.textContent = 'Paused';
+        label.style.color = '';
+      }
     }
   },
 
   _skipTimer() {
     Timer.stop();
-    BreathingGuide.stop();
+    this._stopBreathingInCircle();
     this._onTimerComplete();
   },
 
   _onTimerComplete() {
     this._timerRunning = false;
-    BreathingGuide.stop();
+    this._stopBreathingInCircle();
     const circle = document.getElementById('timer-circle');
     if (circle) {
       circle.classList.remove('active');
       circle.classList.add('complete');
     }
     const label = document.getElementById('timer-label');
-    if (label) label.textContent = 'Done!';
+    if (label) {
+      label.textContent = 'Done!';
+      label.style.color = '';
+    }
     SoundManager.timerComplete();
 
     const pose = this._dayData.poses[this._currentPoseIndex];
@@ -398,11 +461,21 @@ const SessionPlayer = {
       XPToast.show(result.xp_earned);
       SoundManager.xpEarned();
       SoundManager.sessionComplete();
+      Confetti.burst();
+      if (result.bonus_xp > 0) {
+        setTimeout(() => XPToast.showBonus(result.bonus_xp, result.bonus_type), 800);
+      }
       if (result.level_up) {
         setTimeout(() => {
           XPToast.showLevelUp(result.new_level);
           SoundManager.levelUp();
-        }, 500);
+        }, result.bonus_xp > 0 ? 1300 : 500);
+      }
+      if (result.cycle_complete) {
+        setTimeout(() => Confetti.burst(), 800);
+      }
+      if (result.achievements && result.achievements.length > 0) {
+        setTimeout(() => AchievementToast.showAll(result.achievements), 1500);
       }
 
       this._showCompletion(result);
@@ -435,6 +508,12 @@ const SessionPlayer = {
           <h2>${result.cycle_complete ? 'Cycle ' + cycle + ' Complete!' : 'Day ' + (day.sort_order || day.id) + ' Done!'}</h2>
           <p>${result.is_shuffle ? 'Shuffled session complete! Your schedule wasn\'t affected.' : (result.cycle_complete ? 'You completed all days in this cycle!' : 'Keep up the great work!')}</p>
 
+          ${result.bonus_xp > 0 ? `
+            <div style="display:inline-block;padding:6px 16px;border-radius:var(--radius-full);background:rgba(240,195,142,0.15);color:var(--yellow);font-weight:700;font-size:14px;margin-bottom:8px;">
+              ${{ critical: 'Critical Stretch! \u00D72 XP', bonus: 'Bonus! +50% XP', lucky: 'Lucky! +25% XP' }[result.bonus_type] || 'Bonus XP!'}
+            </div>
+          ` : ''}
+
           <div class="completion-stats">
             <div class="completion-stat">
               <div class="completion-stat-value" style="color:var(--green);">+${result.xp_earned}</div>
@@ -464,6 +543,28 @@ const SessionPlayer = {
         </div>
       </div>
     `;
+
+    // Animate stat counters
+    setTimeout(() => {
+      document.querySelectorAll('.completion-stat-value').forEach(el => {
+        const text = el.textContent;
+        const match = text.match(/[+-]?(\d+)/);
+        if (!match) return;
+        const target = parseInt(match[1]);
+        const prefix = text.replace(match[1], '').replace(/\d/g, '');
+        let current = 0;
+        const steps = 30;
+        const increment = target / steps;
+        const interval = setInterval(() => {
+          current += increment;
+          if (current >= target) {
+            current = target;
+            clearInterval(interval);
+          }
+          el.textContent = prefix.startsWith('+') ? `+${Math.round(current)}` : `${Math.round(current)}`;
+        }, 30);
+      });
+    }, 200);
   },
 
   _setProgression(level) {
@@ -495,7 +596,7 @@ const SessionPlayer = {
     }
     if (confirm('Leave this session? Your progress won\'t be saved.')) {
       Timer.stop();
-      BreathingGuide.stop();
+      this._stopBreathingInCircle();
       App.navigate('#/home');
     }
   },

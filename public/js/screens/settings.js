@@ -2,7 +2,7 @@ const SettingsScreen = {
   _allUsers: [],
 
   async render(container) {
-    container.innerHTML = '<div class="screen-enter"><p style="text-align:center;padding-top:40px;">Loading...</p></div>';
+    container.innerHTML = Skeleton.homeScreen();
 
     const user = await API.getUser();
     const difficulty = user.difficulty || 'easy';

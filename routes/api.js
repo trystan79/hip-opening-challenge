@@ -174,6 +174,7 @@ router.delete('/users/:id', (req, res) => {
   db.prepare('DELETE FROM user_pose_substitution WHERE user_id = ?').run(targetId);
   db.prepare('DELETE FROM user_pose_time_override WHERE user_id = ?').run(targetId);
   db.prepare('DELETE FROM cycle_log WHERE user_id = ?').run(targetId);
+  try { db.prepare('DELETE FROM user_achievement WHERE user_id = ?').run(targetId); } catch (e) { /* table may not exist */ }
   db.prepare('DELETE FROM session_log WHERE user_id = ?').run(targetId);
   db.prepare('DELETE FROM user_day_progress WHERE user_id = ?').run(targetId);
   db.prepare('DELETE FROM user_routine WHERE user_id = ?').run(targetId);
@@ -381,6 +382,14 @@ function getTodayForRoutine(db, userId, routineId) {
     painNote = 'Your hips have been sensitive. Use all available props and stay in the regression.';
   }
 
+  // Count completed days in current cycle
+  const completedInCycle = db.prepare(
+    "SELECT COUNT(*) as count FROM user_day_progress udp JOIN day d ON udp.day_id = d.id WHERE udp.user_id = ? AND d.routine_id = ? AND udp.status = 'completed'"
+  ).get(userId, routineId).count;
+  const totalDaysInRoutine = db.prepare(
+    'SELECT COUNT(*) as count FROM day WHERE routine_id = ?'
+  ).get(routineId).count;
+
   // Check if all days in this routine completed
   const totalProgressCount = db.prepare(
     "SELECT COUNT(*) as count FROM user_day_progress udp JOIN day d ON udp.day_id = d.id WHERE udp.user_id = ? AND d.routine_id = ?"
@@ -405,7 +414,9 @@ function getTodayForRoutine(db, userId, routineId) {
     avgPain: Math.round(avgPain * 10) / 10,
     allDaysComplete,
     current_cycle: ur ? ur.current_cycle : 1,
-    difficulty: ur ? ur.difficulty : 'easy'
+    difficulty: ur ? ur.difficulty : 'easy',
+    days_completed_in_cycle: completedInCycle,
+    total_days: totalDaysInRoutine
   };
 }
 
@@ -460,7 +471,8 @@ router.get('/today/all', (req, res) => {
       xp: user.xp,
       level: user.level,
       name: user.name,
-      mascot: user.mascot
+      mascot: user.mascot,
+      last_session_date: user.last_session_date
     }
   });
 });
@@ -756,7 +768,23 @@ router.post('/sessions/:id/complete', (req, res) => {
   if (session.completed === 1) return res.status(400).json({ error: 'Session already completed' });
 
   const day = db.prepare('SELECT * FROM day WHERE id = ?').get(session.day_id);
-  const xpEarned = 20 + (day.week - 1) * 5; // Week 1: 20, Week 2: 25, Week 3: 30
+  let xpEarned = 20 + (day.week - 1) * 5; // Week 1: 20, Week 2: 25, Week 3: 30
+
+  // Variable bonus XP
+  let bonusXP = 0;
+  let bonusType = null;
+  const roll = Math.random();
+  if (roll < 0.05) {
+    bonusXP = xpEarned;
+    bonusType = 'critical';
+  } else if (roll < 0.15) {
+    bonusXP = Math.round(xpEarned * 0.5);
+    bonusType = 'bonus';
+  } else if (roll < 0.20) {
+    bonusXP = Math.round(xpEarned * 0.25);
+    bonusType = 'lucky';
+  }
+  const totalXpEarned = xpEarned + bonusXP;
 
   // Update session
   db.prepare(`
@@ -766,11 +794,11 @@ router.post('/sessions/:id/complete', (req, res) => {
       difficulty_rating = ?, flexibility_rating = ?,
       xp_earned = ?, completed = 1
     WHERE id = ?
-  `).run(pain_rating || null, pain_location || null, difficulty_rating || null, flexibility_rating || null, xpEarned, sessionId);
+  `).run(pain_rating || null, pain_location || null, difficulty_rating || null, flexibility_rating || null, totalXpEarned, sessionId);
 
   // Update user XP and level
   const user = db.prepare('SELECT * FROM user WHERE id = ?').get(userId);
-  const newXP = user.xp + xpEarned;
+  const newXP = user.xp + totalXpEarned;
   const newLevel = Math.floor(newXP / 100) + 1;
 
   // Update streak
@@ -799,7 +827,9 @@ router.post('/sessions/:id/complete', (req, res) => {
     `).run(newXP, newLevel, newStreak, longestStreak, today, userId);
 
     return res.json({
-      xp_earned: xpEarned,
+      xp_earned: totalXpEarned,
+      bonus_xp: bonusXP,
+      bonus_type: bonusType,
       total_xp: newXP,
       new_level: newLevel,
       streak: newStreak,
@@ -845,8 +875,43 @@ router.post('/sessions/:id/complete', (req, res) => {
     "SELECT COUNT(*) as count FROM user_day_progress udp JOIN day d ON udp.day_id = d.id WHERE udp.user_id = ? AND d.routine_id = ? AND udp.status != 'completed'"
   ).get(userId, routineId).count;
 
+  // Check achievements
+  const totalSessions = db.prepare(
+    'SELECT COUNT(*) as count FROM session_log WHERE user_id = ? AND completed = 1'
+  ).get(userId).count;
+  const newAchievements = [];
+  const achievementDefs = [
+    { key: 'first_session', check: () => totalSessions >= 1 },
+    { key: 'streak_3', check: () => newStreak >= 3 },
+    { key: 'streak_7', check: () => newStreak >= 7 },
+    { key: 'streak_14', check: () => newStreak >= 14 },
+    { key: 'streak_21', check: () => newStreak >= 21 },
+    { key: 'level_5', check: () => newLevel >= 5 },
+    { key: 'level_10', check: () => newLevel >= 10 },
+    { key: 'sessions_10', check: () => totalSessions >= 10 },
+    { key: 'sessions_25', check: () => totalSessions >= 25 },
+    { key: 'cycle_complete', check: () => lockedOrAvailable === 0 }
+  ];
+  for (const def of achievementDefs) {
+    if (def.check()) {
+      try {
+        const existing = db.prepare(
+          'SELECT id FROM user_achievement WHERE user_id = ? AND achievement_key = ?'
+        ).get(userId, def.key);
+        if (!existing) {
+          db.prepare(
+            'INSERT INTO user_achievement (user_id, achievement_key) VALUES (?, ?)'
+          ).run(userId, def.key);
+          newAchievements.push(def.key);
+        }
+      } catch (e) { /* table may not exist yet */ }
+    }
+  }
+
   res.json({
-    xp_earned: xpEarned,
+    xp_earned: totalXpEarned,
+    bonus_xp: bonusXP,
+    bonus_type: bonusType,
     total_xp: newXP,
     new_level: newLevel,
     streak: newStreak,
@@ -854,7 +919,8 @@ router.post('/sessions/:id/complete', (req, res) => {
     level_up: newLevel > user.level,
     cycle_complete: lockedOrAvailable === 0,
     current_cycle: ur ? ur.current_cycle : 1,
-    routine_id: routineId
+    routine_id: routineId,
+    achievements: newAchievements
   });
 });
 
@@ -913,11 +979,17 @@ router.get('/progress', (req, res) => {
     'SELECT COUNT(*) as count FROM cycle_log WHERE user_id = ? AND routine_id = ?'
   ).get(userId, routineId).count;
 
+  // Days since joined
+  const daysSinceJoined = ur && ur.joined_at
+    ? Math.floor((Date.now() - new Date(ur.joined_at).getTime()) / 86400000)
+    : 0;
+
   res.json({
     user, sessions, totalSessions, daysCompleted,
     totalDays, currentCycle: ur ? ur.current_cycle : 1,
     cyclesCompleted, calendarData, painTrend, flexTrend,
-    routine_id: routineId
+    routine_id: routineId,
+    daysSinceJoined
   });
 });
 
@@ -995,6 +1067,7 @@ router.post('/reset', (req, res) => {
   db.prepare('DELETE FROM user_pose_substitution WHERE user_id = ?').run(userId);
   db.prepare('DELETE FROM user_pose_time_override WHERE user_id = ?').run(userId);
   db.prepare('DELETE FROM cycle_log WHERE user_id = ?').run(userId);
+  try { db.prepare('DELETE FROM user_achievement WHERE user_id = ?').run(userId); } catch (e) { /* table may not exist */ }
   db.prepare("UPDATE user_day_progress SET status = 'locked', times_completed = 0, last_completed_at = NULL WHERE user_id = ?").run(userId);
   // Reset user_routine entries
   db.prepare("UPDATE user_routine SET current_day = 1, current_cycle = 1, difficulty = 'easy' WHERE user_id = ?").run(userId);

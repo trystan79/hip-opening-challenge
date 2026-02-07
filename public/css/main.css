@@ -96,19 +96,21 @@ p { line-height: 1.5; color: var(--text-secondary); }
   color: white;
 }
 .btn-primary:hover { background: var(--accent-dark); }
-.btn-primary:active { transform: scale(0.97); }
+.btn-primary:active { transform: scale(0.96); }
 
 .btn-secondary {
   background: var(--bg-input);
   color: var(--text-primary);
 }
 .btn-secondary:hover { background: var(--blue); }
+.btn-secondary:active { transform: scale(0.96); }
 
 .btn-success {
   background: var(--green);
   color: var(--bg-primary);
 }
 .btn-success:hover { background: var(--green-dark); }
+.btn-success:active { transform: scale(0.96); }
 
 .btn-ghost {
   background: transparent;
@@ -222,11 +224,11 @@ input::placeholder {
 
 /* Screen enter animation */
 .screen-enter {
-  animation: screenEnter 0.3s ease;
+  animation: screenEnter 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 @keyframes screenEnter {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(12px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 /* Toast container */

@@ -65,7 +65,7 @@ const NewUserScreen = {
       const user = await API.createUser(name, this._selectedMascot, pin);
       Session.setUser(user.id);
       Session.setMascot(user.mascot);
-      App.navigate('#/routines');
+      App.navigate('#/onboarding');
     } catch (err) {
       errorEl.textContent = err.message.includes('10') ? 'Maximum 10 users reached.' : 'Failed to create account. Try again.';
       errorEl.style.display = 'block';

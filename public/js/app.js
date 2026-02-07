@@ -8,7 +8,7 @@ const App = {
 
     if (!Session.isLoggedIn()) {
       window.location.hash = '#/login';
-    } else if (!window.location.hash || window.location.hash === '#/login' || window.location.hash === '#/new-user') {
+    } else if (!window.location.hash || window.location.hash === '#/login' || window.location.hash === '#/new-user' || window.location.hash === '#/onboarding') {
       window.location.hash = '#/home';
     } else {
       this._route();
@@ -38,6 +38,11 @@ const App = {
       if (route === 'new-user') {
         NavBar.hide();
         NewUserScreen.render(container);
+        return;
+      }
+      if (route === 'onboarding') {
+        NavBar.hide();
+        await OnboardingScreen.render(container);
         return;
       }
 
@@ -75,4 +80,14 @@ const App = {
   }
 };
 
-document.addEventListener('DOMContentLoaded', () => App.init());
+document.addEventListener('DOMContentLoaded', () => {
+  App.init();
+
+  // Global haptic feedback on button/nav taps
+  document.addEventListener('click', (e) => {
+    if (localStorage.getItem('hipChallenge_haptics') === '0') return;
+    if (e.target.closest('.btn') || e.target.closest('.nav-item')) {
+      if (navigator.vibrate) navigator.vibrate(8);
+    }
+  });
+});

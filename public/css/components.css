@@ -220,3 +220,246 @@
 .calendar-day.today {
   border: 2px solid var(--accent);
 }
+
+/* Skeleton Loading */
+.skeleton {
+  background: var(--bg-input);
+  overflow: hidden;
+  position: relative;
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+  animation: skeletonShimmer 1.5s infinite;
+}
+@keyframes skeletonShimmer {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+.skeleton-card { height: 120px; }
+.skeleton-text { height: 14px; border-radius: 4px; }
+.skeleton-circle { border-radius: 50%; }
+.skeleton-stat { height: 60px; }
+
+/* Confetti */
+.confetti-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 999;
+}
+.confetti-particle {
+  position: absolute;
+  top: -10px;
+  opacity: 0;
+}
+@keyframes confettiFall {
+  0% { opacity: 1; transform: translateY(0) translateX(0) rotate(0deg); }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(100vh) translateX(var(--drift)) rotate(var(--rotation)); }
+}
+
+/* Streak Warning */
+.streak-warning {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(240,195,142,0.3);
+  background: rgba(240,195,142,0.08);
+  margin-bottom: 16px;
+  animation: streakPulse 3s ease-in-out infinite;
+}
+.streak-warning-critical {
+  border-color: rgba(233,69,96,0.4);
+  background: rgba(233,69,96,0.08);
+  animation-duration: 2s;
+}
+.streak-warning-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+.streak-warning-title {
+  font-weight: 700;
+  font-size: 14px;
+}
+.streak-warning-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+@keyframes streakPulse {
+  0%, 100% { border-color: rgba(240,195,142,0.3); }
+  50% { border-color: rgba(240,195,142,0.6); }
+}
+
+/* Card Stagger Animation */
+.card-stagger > * {
+  opacity: 0;
+  animation: cardStaggerIn 0.3s ease forwards;
+}
+.card-stagger > *:nth-child(1) { animation-delay: 0s; }
+.card-stagger > *:nth-child(2) { animation-delay: 0.05s; }
+.card-stagger > *:nth-child(3) { animation-delay: 0.1s; }
+.card-stagger > *:nth-child(4) { animation-delay: 0.15s; }
+.card-stagger > *:nth-child(5) { animation-delay: 0.2s; }
+.card-stagger > *:nth-child(6) { animation-delay: 0.25s; }
+@keyframes cardStaggerIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Bonus Toast */
+.bonus-toast {
+  border-color: var(--yellow);
+  background: linear-gradient(135deg, var(--bg-card), rgba(240,195,142,0.1));
+}
+.bonus-glow {
+  color: var(--yellow);
+  text-shadow: 0 0 8px rgba(240,195,142,0.5);
+  animation: bonusPulse 0.6s ease;
+}
+@keyframes bonusPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+/* Achievement Toast */
+.achievement-toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, var(--bg-card), rgba(167,139,250,0.15));
+  border: 2px solid var(--purple);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  color: var(--text-primary);
+  animation: achievementIn 0.5s ease, toastOut 0.4s ease 3.6s;
+  pointer-events: auto;
+}
+@keyframes achievementIn {
+  0% { opacity: 0; transform: scale(0.8) translateY(-20px); }
+  60% { transform: scale(1.05) translateY(0); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Progress Ring */
+.progress-ring-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.progress-ring-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-weight: 800;
+  font-size: 14px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Lifetime Stats */
+.lifetime-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 14px;
+}
+.lifetime-stat-row:last-child { border-bottom: none; }
+.lifetime-stat-row .stat-key { color: var(--text-muted); }
+.lifetime-stat-row .stat-val { font-weight: 700; }
+
+/* Calendar Heatmap Intensity */
+.calendar-day-header {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: center;
+  font-weight: 600;
+}
+.cal-empty { background: var(--bg-input); }
+.cal-low { background: rgba(78,204,163,0.2); }
+.cal-medium { background: rgba(78,204,163,0.5); }
+.cal-high { background: var(--green); color: var(--bg-primary); }
+
+/* Onboarding */
+.onboarding-screen {
+  padding-top: 24px;
+  min-height: 100vh;
+}
+.onboarding-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+.onboarding-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--bg-input);
+  transition: all 0.3s;
+}
+.onboarding-dot.active {
+  width: 24px;
+  background: var(--accent);
+}
+.onboarding-routine-card {
+  padding: 16px;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 2px solid transparent;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.onboarding-routine-card.selected {
+  border-color: var(--accent);
+  background: rgba(233,69,96,0.08);
+}
+.endowed-progress-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  text-align: center;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 32px 20px;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  margin-bottom: 16px;
+}
+
+/* Pull-to-Refresh */
+.pull-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: height 0.1s;
+}
+.pull-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--bg-input);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+}
+.pull-spinner.spinning {
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

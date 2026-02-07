@@ -1,52 +1,69 @@
 const ProgressScreen = {
   async render(container) {
-    container.innerHTML = '<div class="screen-enter"><p style="text-align:center;padding-top:40px;">Loading...</p></div>';
+    container.innerHTML = Skeleton.progressScreen();
 
     const data = await API.getProgress();
     const user = data.user;
+    const cyclePercent = data.totalDays > 0 ? Math.round((data.daysCompleted / data.totalDays) * 100) : 0;
+
+    if (data.totalSessions === 0) {
+      container.innerHTML = `
+        <div class="screen-enter">
+          <h2 style="margin-bottom:20px;">Your Progress</h2>
+          <div class="empty-state">
+            <div style="font-size:48px;margin-bottom:12px;">\uD83D\uDCCA</div>
+            <h3>No Data Yet</h3>
+            <p style="font-size:13px;margin-top:4px;">Complete your first session to start tracking</p>
+            <button class="btn btn-primary" style="margin-top:16px;" onclick="App.navigate('#/home')">Go to Session</button>
+          </div>
+        </div>
+      `;
+      return;
+    }
 
     container.innerHTML = `
       <div class="screen-enter">
         <h2 style="margin-bottom:20px;">Your Progress</h2>
 
-        <div class="stat-grid">
-          <div class="stat-item">
-            <div class="stat-value" style="color:var(--green);">${data.daysCompleted}</div>
-            <div class="stat-label">Days Done</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value" style="color:var(--yellow);">${user.streak_count}</div>
-            <div class="stat-label">Current Streak</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value" style="color:var(--purple);">${user.longest_streak}</div>
-            <div class="stat-label">Best Streak</div>
+        <div class="card" style="display:flex;align-items:center;gap:20px;">
+          ${ProgressRing.render(cyclePercent, 80, 6, 'var(--accent)', `<span style="font-size:18px;">${cyclePercent}%</span>`)}
+          <div style="flex:1;">
+            <div style="font-size:16px;font-weight:700;">Cycle ${data.currentCycle || 1}</div>
+            <div style="font-size:13px;color:var(--text-muted);margin-top:4px;">${data.daysCompleted}/${data.totalDays} days complete</div>
+            <div style="display:flex;gap:16px;margin-top:8px;">
+              <div>
+                <div style="font-size:20px;font-weight:800;color:var(--yellow);">${user.streak_count}</div>
+                <div style="font-size:11px;color:var(--text-muted);">Streak</div>
+              </div>
+              <div>
+                <div style="font-size:20px;font-weight:800;color:var(--purple);">${user.longest_streak}</div>
+                <div style="font-size:11px;color:var(--text-muted);">Best</div>
+              </div>
+            </div>
           </div>
         </div>
 
         <div class="card" style="margin-top:16px;">
-          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-            <h3>Cycle ${data.currentCycle || 1} Progress</h3>
-            <span class="badge badge-accent">${Math.round((data.daysCompleted / data.totalDays) * 100)}%</span>
+          <h3 style="margin-bottom:12px;">Lifetime Stats</h3>
+          <div class="lifetime-stat-row">
+            <span class="stat-key">Total Sessions</span>
+            <span class="stat-val" style="color:var(--orange);">${data.totalSessions}</span>
           </div>
-          <div class="progress-bar" style="height:12px;">
-            <div class="progress-bar-fill" style="width:${(data.daysCompleted / data.totalDays) * 100}%"></div>
+          <div class="lifetime-stat-row">
+            <span class="stat-key">Total XP</span>
+            <span class="stat-val" style="color:var(--green);">${user.xp}</span>
           </div>
-          <p style="font-size:13px;margin-top:8px;">${data.totalDays - data.daysCompleted} days remaining${data.cyclesCompleted > 0 ? ' \u2022 ' + data.cyclesCompleted + ' cycle' + (data.cyclesCompleted > 1 ? 's' : '') + ' completed' : ''}</p>
-        </div>
-
-        <div class="stat-grid" style="margin-top:12px;">
-          <div class="stat-item">
-            <div class="stat-value" style="color:var(--green);">${user.xp}</div>
-            <div class="stat-label">Total XP</div>
+          <div class="lifetime-stat-row">
+            <span class="stat-key">Level</span>
+            <span class="stat-val" style="color:var(--accent);">${user.level}</span>
           </div>
-          <div class="stat-item">
-            <div class="stat-value" style="color:var(--accent);">${user.level}</div>
-            <div class="stat-label">Level</div>
+          <div class="lifetime-stat-row">
+            <span class="stat-key">Cycles Completed</span>
+            <span class="stat-val">${data.cyclesCompleted}</span>
           </div>
-          <div class="stat-item">
-            <div class="stat-value" style="color:var(--orange);">${data.totalSessions}</div>
-            <div class="stat-label">Sessions</div>
+          <div class="lifetime-stat-row">
+            <span class="stat-key">Days on Program</span>
+            <span class="stat-val">${data.daysSinceJoined || 0}</span>
           </div>
         </div>
 
@@ -92,26 +109,44 @@ const ProgressScreen = {
         ` : ''}
       </div>
     `;
+
+    // Animate progress rings
+    requestAnimationFrame(() => ProgressRing.animateIn('#screen-container'));
   },
 
   _renderCalendar(calendarData) {
-    const activeDates = new Set(calendarData.map(d => d.date));
+    // Build session count map for intensity
+    const dateMap = {};
+    calendarData.forEach(d => { dateMap[d.date] = d.sessions || 1; });
     const today = new Date();
     const days = [];
+    const dayHeaders = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
-    for (let i = 29; i >= 0; i--) {
+    // Find starting day-of-week for 35 days ago (5 full weeks)
+    const startDate = new Date(today);
+    startDate.setDate(startDate.getDate() - 34);
+    const startDow = startDate.getDay();
+
+    for (let i = 34; i >= 0; i--) {
       const d = new Date(today);
       d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().split('T')[0];
       const isToday = i === 0;
-      const isActive = activeDates.has(dateStr);
-      days.push({ date: d.getDate(), isActive, isToday });
+      const sessions = dateMap[dateStr] || 0;
+      let intensity = 'cal-empty';
+      if (sessions === 1) intensity = 'cal-low';
+      else if (sessions === 2) intensity = 'cal-medium';
+      else if (sessions >= 3) intensity = 'cal-high';
+      days.push({ date: d.getDate(), isToday, intensity });
     }
 
     return `
+      <div class="calendar-grid" style="margin-bottom:4px;">
+        ${dayHeaders.map(h => `<div class="calendar-day-header">${h}</div>`).join('')}
+      </div>
       <div class="calendar-grid">
         ${days.map(d => `
-          <div class="calendar-day ${d.isActive ? 'active' : 'empty'} ${d.isToday ? 'today' : ''}">
+          <div class="calendar-day ${d.intensity} ${d.isToday ? 'today' : ''}">
             ${d.date}
           </div>
         `).join('')}

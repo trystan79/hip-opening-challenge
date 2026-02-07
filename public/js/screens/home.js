@@ -2,7 +2,7 @@ const HomeScreen = {
   _shuffleDay: null,
 
   async render(container) {
-    container.innerHTML = '<div class="screen-enter"><p style="text-align:center;padding-top:40px;">Loading...</p></div>';
+    container.innerHTML = Skeleton.homeScreen();
 
     this._shuffleDay = null;
     let data;
@@ -21,6 +21,30 @@ const HomeScreen = {
     const hasActiveDay = routines.some(r => r.day);
     const mascotMood = user.streak_count >= 3 ? 'proud' : (hasActiveDay ? 'happy' : 'resting');
 
+    // Streak warning logic
+    const today = new Date().toISOString().split('T')[0];
+    const didSessionToday = user.last_session_date === today;
+    let streakWarningHtml = '';
+    if (!didSessionToday && user.streak_count >= 7) {
+      streakWarningHtml = `
+        <div class="streak-warning streak-warning-critical">
+          <div class="streak-warning-icon">\uD83D\uDD25</div>
+          <div>
+            <div class="streak-warning-title">Don't lose your ${user.streak_count}-day streak!</div>
+            <div class="streak-warning-sub">Stretch today to keep it alive</div>
+          </div>
+        </div>`;
+    } else if (!didSessionToday && user.streak_count >= 3) {
+      streakWarningHtml = `
+        <div class="streak-warning">
+          <div class="streak-warning-icon">\u26A1</div>
+          <div>
+            <div class="streak-warning-title">${user.streak_count} days strong!</div>
+            <div class="streak-warning-sub">Stretch today to keep going</div>
+          </div>
+        </div>`;
+    }
+
     container.innerHTML = `
       <div class="screen-enter">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
@@ -31,14 +55,20 @@ const HomeScreen = {
           ${StreakBadge.render(user.streak_count)}
         </div>
 
-        ${Mascot.render(user.mascot, mascotMood, 64)}
+        ${Mascot.render(user.mascot, mascotMood, 64, Mascot.getContextMessage(user, routines))}
 
+        ${streakWarningHtml}
+
+        <div class="card-stagger">
         ${routines.map(r => this._renderRoutineCard(r)).join('')}
+        </div>
 
         ${routines.length === 0 ? `
-          <div class="card" style="text-align:center;">
-            <p style="margin-bottom:12px;">No active routines</p>
-            <button class="btn btn-primary" onclick="App.navigate('#/routines')">Browse Routines</button>
+          <div class="empty-state">
+            <div style="margin-bottom:12px;">${MascotSVG.render(user.mascot || 'fox', 80)}</div>
+            <h3>No Active Routines</h3>
+            <p style="font-size:13px;margin-top:4px;">Pick a stretching program to get started</p>
+            <button class="btn btn-primary" style="margin-top:16px;" onclick="App.navigate('#/routines')">Browse Routines</button>
           </div>
         ` : ''}
 
@@ -71,17 +101,65 @@ const HomeScreen = {
           </div>
         </div>
 
-        <div style="margin-top:12px;">
-          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);margin-bottom:4px;">
-            <span>Level ${user.level}</span>
-            <span>${xpForLevel}/100 XP</span>
-          </div>
-          <div class="progress-bar">
-            <div class="progress-bar-fill" style="width:${xpForLevel}%"></div>
+        <div class="card" style="margin-top:12px;display:flex;align-items:center;gap:16px;padding:16px;">
+          ${ProgressRing.render(xpForLevel, 56, 5, 'var(--accent)', `<span style="font-size:16px;">${user.level}</span>`)}
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;">Level ${user.level}</div>
+            <div class="progress-bar" style="margin-top:6px;">
+              <div class="progress-bar-fill" style="width:${xpForLevel}%"></div>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${xpForLevel}/100 XP to next level</div>
           </div>
         </div>
       </div>
     `;
+
+    // Animate progress rings after render
+    requestAnimationFrame(() => ProgressRing.animateIn('#screen-container'));
+
+    // Pull-to-refresh
+    this._setupPullToRefresh(container);
+  },
+
+  _setupPullToRefresh(container) {
+    let startY = 0;
+    let pulling = false;
+    let indicator = null;
+
+    container.addEventListener('touchstart', (e) => {
+      if (window.scrollY === 0) {
+        startY = e.touches[0].clientY;
+        pulling = true;
+      }
+    }, { passive: true });
+
+    container.addEventListener('touchmove', (e) => {
+      if (!pulling) return;
+      const dy = e.touches[0].clientY - startY;
+      if (dy < 0) { pulling = false; return; }
+      if (dy > 10) {
+        if (!indicator) {
+          indicator = document.createElement('div');
+          indicator.className = 'pull-indicator';
+          indicator.innerHTML = '<div class="pull-spinner"></div>';
+          container.prepend(indicator);
+        }
+        indicator.style.height = Math.min(dy * 0.5, 60) + 'px';
+      }
+    }, { passive: true });
+
+    container.addEventListener('touchend', () => {
+      if (!pulling || !indicator) { pulling = false; return; }
+      const h = parseInt(indicator.style.height);
+      if (h > 40) {
+        indicator.querySelector('.pull-spinner').classList.add('spinning');
+        HomeScreen.render(document.getElementById('screen-container'));
+      } else if (indicator) {
+        indicator.remove();
+      }
+      indicator = null;
+      pulling = false;
+    }, { passive: true });
   },
 
   _renderRoutineCard(r) {
@@ -118,6 +196,15 @@ const HomeScreen = {
           <span style="font-size:12px;font-weight:600;color:${color};">${r.routine_name}</span>
           <span style="font-size:11px;color:var(--text-muted);">Cycle ${cycle} \u2022 Day ${day.sort_order || day.id}</span>
         </div>
+        ${r.total_days ? `
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+            ${ProgressRing.render(Math.round((r.days_completed_in_cycle / r.total_days) * 100), 44, 4, color, '')}
+            <div>
+              <div style="font-size:13px;font-weight:700;">${Math.round((r.days_completed_in_cycle / r.total_days) * 100)}% of Cycle ${cycle}</div>
+              <div style="font-size:11px;color:var(--text-muted);">${r.total_days - r.days_completed_in_cycle} sessions remaining</div>
+            </div>
+          </div>
+        ` : ''}
         ${painHtml || ''}
         <div style="cursor:pointer;" onclick="App.navigate('#/session/${day.id}')">
           <div style="margin-bottom:8px;">

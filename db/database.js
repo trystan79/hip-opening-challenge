@@ -349,6 +349,23 @@ function _runMigrations() {
     }
   } catch (e) { /* routine table may not exist */ }
 
+  // Phase: user_achievement table
+  try {
+    const stmt = db.prepare("SELECT id FROM user_achievement LIMIT 0");
+    stmt.free();
+  } catch (e) {
+    console.log('  Creating user_achievement table...');
+    db.run(`CREATE TABLE IF NOT EXISTS user_achievement (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      achievement_key TEXT NOT NULL,
+      unlocked_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES user(id),
+      UNIQUE(user_id, achievement_key)
+    )`);
+    changed = true;
+  }
+
   // Ensure at least one admin exists — promote first user if none
   try {
     const adminCheck = db.prepare("SELECT COUNT(*) as count FROM user WHERE is_admin = 1");

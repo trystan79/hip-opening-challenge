@@ -76,9 +76,19 @@
 }
 .timer-circle.active {
   border-color: var(--accent);
+  transition: transform 0.3s ease;
+}
+.timer-circle.breathing {
+  animation: timerBreathe 12s ease-in-out infinite;
+}
+@keyframes timerBreathe {
+  0% { transform: scale(1); }
+  33.3% { transform: scale(1.06); }
+  100% { transform: scale(1); }
 }
 .timer-circle.complete {
   border-color: var(--green);
+  animation: none;
 }
 .timer-time {
   font-size: 48px;
@@ -338,4 +348,14 @@
 .progression-tab.active {
   background: var(--bg-card);
   color: var(--text-primary);
+}
+
+/* Countdown pop (used on timer-time during 3-2-1) */
+.countdown-pop {
+  animation: countdownPop 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes countdownPop {
+  0% { opacity: 0.3; transform: scale(0.5); }
+  60% { opacity: 1; transform: scale(1.1); }
+  100% { transform: scale(1); }
 }
