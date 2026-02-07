@@ -11,8 +11,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 initDB();
 
-// Health check for Railway - respond immediately, don't wait for DB
-app.get('/health', (req, res) => {
+// Health check for Railway - wait for DB so traffic only routes when ready
+app.get('/health', async (req, res) => {
+  await waitForDB();
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
