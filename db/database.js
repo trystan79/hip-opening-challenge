@@ -297,6 +297,27 @@ function _runMigrations() {
     // routine table might not exist yet in edge cases; skip
   }
 
+  // Ensure at least one admin exists — promote first user if none
+  try {
+    const adminCheck = db.prepare("SELECT COUNT(*) as count FROM user WHERE is_admin = 1");
+    adminCheck.bind([]);
+    adminCheck.step();
+    const adminCount = adminCheck.get()[0];
+    adminCheck.free();
+    if (adminCount === 0) {
+      const firstUser = db.prepare("SELECT id FROM user ORDER BY id LIMIT 1");
+      if (firstUser.step()) {
+        const firstId = firstUser.get()[0];
+        firstUser.free();
+        db.run("UPDATE user SET is_admin = 1 WHERE id = ?", [firstId]);
+        console.log('  Promoted first user to admin.');
+        changed = true;
+      } else {
+        firstUser.free();
+      }
+    }
+  } catch (e) { /* no users yet */ }
+
   if (changed) {
     _save();
     console.log('Migrations applied.');

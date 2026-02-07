@@ -67,7 +67,7 @@ const LoginScreen = {
 
   _pendingUserId: null,
 
-  _selectUser(userId, hasPin) {
+  async _selectUser(userId, hasPin) {
     if (hasPin) {
       this._pendingUserId = userId;
       const modal = document.getElementById('pin-modal');
@@ -76,7 +76,13 @@ const LoginScreen = {
       document.getElementById('pin-input').focus();
       document.getElementById('pin-error').style.display = 'none';
     } else {
-      this._loginUser(userId);
+      // Still call login API to get admin status
+      try {
+        const result = await API.login(userId, '');
+        this._loginUser(userId, result.isAdmin);
+      } catch {
+        this._loginUser(userId);
+      }
     }
   },
 
