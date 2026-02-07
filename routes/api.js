@@ -382,13 +382,16 @@ function getTodayForRoutine(db, userId, routineId) {
   }
 
   // Check if all days in this routine completed
+  const totalProgressCount = db.prepare(
+    "SELECT COUNT(*) as count FROM user_day_progress udp JOIN day d ON udp.day_id = d.id WHERE udp.user_id = ? AND d.routine_id = ?"
+  ).get(userId, routineId).count;
   const availableCount = db.prepare(
     "SELECT COUNT(*) as count FROM user_day_progress udp JOIN day d ON udp.day_id = d.id WHERE udp.user_id = ? AND d.routine_id = ? AND udp.status = 'available'"
   ).get(userId, routineId).count;
   const lockedCount = db.prepare(
     "SELECT COUNT(*) as count FROM user_day_progress udp JOIN day d ON udp.day_id = d.id WHERE udp.user_id = ? AND d.routine_id = ? AND udp.status = 'locked'"
   ).get(userId, routineId).count;
-  const allDaysComplete = availableCount === 0 && lockedCount === 0;
+  const allDaysComplete = totalProgressCount > 0 && availableCount === 0 && lockedCount === 0;
 
   return {
     routine_id: routineId,
@@ -445,10 +448,8 @@ router.get('/today/all', (req, res) => {
     'SELECT routine_id FROM user_routine WHERE user_id = ? AND is_active = 1 ORDER BY routine_id'
   ).all(userId);
 
-  // If no user_routine records, default to routine 1
-  const routineIds = activeRoutines.length > 0
-    ? activeRoutines.map(r => r.routine_id)
-    : [1];
+  // If no active routines, return empty list (user picks from routines screen)
+  const routineIds = activeRoutines.map(r => r.routine_id);
 
   const routines = routineIds.map(rid => getTodayForRoutine(db, userId, rid));
 
