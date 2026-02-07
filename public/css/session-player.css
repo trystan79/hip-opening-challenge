@@ -369,7 +369,7 @@
 /* ===== Landscape (phones only) ===== */
 @media (orientation: landscape) and (max-height: 500px) {
 
-  /* --- Grid shell: header on top, 3-column content below --- */
+  /* --- Immersive grid: viewport-locked, 3-column timer layout --- */
   .session-player {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
@@ -377,34 +377,40 @@
     height: 100vh;
     min-height: 0;
     overflow-y: auto;
-    padding: 8px 24px;
-    padding-top: calc(8px + env(safe-area-inset-top, 0px));
-    padding-left: calc(24px + env(safe-area-inset-left, 0px));
-    padding-right: calc(24px + env(safe-area-inset-right, 0px));
-    padding-bottom: 8px;
-    gap: 0 20px;
+    padding: 6px 20px;
+    padding-top: calc(6px + env(safe-area-inset-top, 0px));
+    padding-left: calc(20px + env(safe-area-inset-left, 0px));
+    padding-right: calc(20px + env(safe-area-inset-right, 0px));
+    padding-bottom: 6px;
+    gap: 0 16px;
   }
   @supports (height: 1dvh) {
     .session-player { height: 100dvh; }
   }
 
-  /* Default: non-timer screens span full width naturally */
+  /* Non-timer screens (intro, checkin, completion) span full width */
   .session-player > * { grid-column: 1 / -1; }
 
-  /* --- Hide non-essentials --- */
+  /* --- Strip non-essentials --- */
   .session-progress-bar { display: none; }
   #pose-details { display: none; }
   .time-adjust-row { display: none !important; }
 
-  /* --- Row 1: slim header, full width --- */
+  /* --- Ghost header: faint back arrow only --- */
   .session-header {
     grid-row: 1;
     margin-bottom: 0;
   }
-  .session-progress-text { font-size: 12px; }
-  .session-back { font-size: 20px; padding: 4px 8px; }
+  .session-progress-text { display: none; }
+  .session-back {
+    opacity: 0.3;
+    font-size: 18px;
+    padding: 2px 8px;
+    transition: opacity 0.2s;
+  }
+  .session-back:active { opacity: 0.7; }
 
-  /* --- Row 2, left column: pose name --- */
+  /* --- Left column: pose name, right-aligned toward timer --- */
   .pose-display {
     grid-column: 1;
     grid-row: 2;
@@ -414,49 +420,104 @@
     margin: 0;
   }
   .pose-display .pose-title {
-    font-size: 22px;
-    line-height: 1.2;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    opacity: 0.85;
   }
   .pose-display .pose-side {
     font-size: 13px;
-    margin-bottom: 0;
-    margin-top: 4px;
+    font-weight: 600;
+    margin: 6px 0 0;
+    opacity: 0.6;
   }
 
-  /* --- Row 2, center column: timer hero --- */
+  /* --- Center column: timer at native SVG size (200 + 4px border = 208 = viewBox) --- */
   .timer-container {
     grid-column: 2;
     grid-row: 2;
     align-self: center;
     margin: 0;
   }
-  .timer-circle { width: 150px; height: 150px; }
-  .timer-ring  { width: 158px; height: 158px; }
+  .timer-circle {
+    width: 200px;
+    height: 200px;
+  }
+  .timer-ring {
+    width: 208px;
+    height: 208px;
+  }
   .timer-ring circle { stroke-width: 4; }
-  .timer-time  { font-size: 38px; }
-  .timer-label { font-size: 11px; }
+  .timer-time {
+    font-size: 46px;
+    letter-spacing: -0.02em;
+  }
+  .timer-label { font-size: 12px; }
 
-  /* --- Row 2, right column: controls / action --- */
+  /* Ambient glow — active state */
+  .timer-circle.active {
+    box-shadow:
+      0 0 40px rgba(233, 69, 96, 0.20),
+      0 0 80px rgba(233, 69, 96, 0.08);
+  }
+
+  /* Ambient glow — breathing pulse synced with inhale/exhale */
+  .timer-circle.breathing {
+    animation: landscapeBreathe 12s ease-in-out infinite;
+  }
+  @keyframes landscapeBreathe {
+    0%    { transform: scale(1);    box-shadow: 0 0 30px rgba(233,69,96,0.15), 0 0 60px rgba(233,69,96,0.05); }
+    33.3% { transform: scale(1.04); box-shadow: 0 0 50px rgba(233,69,96,0.30), 0 0 100px rgba(233,69,96,0.10); }
+    100%  { transform: scale(1);    box-shadow: 0 0 30px rgba(233,69,96,0.15), 0 0 60px rgba(233,69,96,0.05); }
+  }
+
+  /* Ambient glow — complete state */
+  .timer-circle.complete {
+    box-shadow:
+      0 0 40px rgba(78, 204, 163, 0.25),
+      0 0 80px rgba(78, 204, 163, 0.10);
+  }
+
+  /* --- Right column: refined pill controls --- */
   #action-area {
     grid-column: 3;
     grid-row: 2;
     align-self: center;
     justify-self: start;
   }
-  #action-area .btn { margin: 0 !important; }
+  #action-area .btn {
+    margin: 0 !important;
+    border-radius: var(--radius-full);
+    padding: 12px 24px;
+    width: auto;
+  }
 
   .session-controls {
     grid-column: 3;
     grid-row: 2;
     align-self: center;
     justify-self: start;
+    flex-direction: column;
+    align-items: stretch;
     margin: 0;
-    flex-wrap: wrap;
-    gap: 8px;
+    gap: 10px;
+    min-width: 100px;
+  }
+  .session-controls .btn {
+    flex: none;
+    border-radius: var(--radius-full);
+    font-size: 14px;
+    padding: 10px 24px;
   }
   .session-controls .btn-full { width: auto; }
+  .session-controls .btn-ghost {
+    opacity: 0.4;
+    font-size: 13px;
+    padding: 8px 20px;
+  }
 
-  /* --- Check-in & completion: full-width, compact --- */
+  /* --- Full-width screens: compact checkin & completion --- */
   .checkin-container { padding: 8px 0; }
   .checkin-question { font-size: 16px; }
   .checkin-btn { width: 40px; height: 40px; font-size: 16px; }
