@@ -1,6 +1,6 @@
 const ThemeManager = {
   STORAGE_KEY: 'hipChallenge_theme',
-  META_COLORS: { dark: '#1a1a2e', light: '#f5f5f7' },
+  META_COLORS: { dark: '#0B1D1C', light: '#F7F8F6' },
 
   init() {
     this.apply(this.get());

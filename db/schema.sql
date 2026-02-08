@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS routine (
   description TEXT,
   total_days INTEGER NOT NULL,
   icon TEXT DEFAULT 'stretch',
-  color TEXT DEFAULT '#e94560',
+  color TEXT DEFAULT '#FF6B6B',
   created_at TEXT DEFAULT (datetime('now'))
 );
 

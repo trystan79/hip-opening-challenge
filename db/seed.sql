@@ -5,7 +5,7 @@
 
 -- ROUTINES
 INSERT INTO routine (id, name, slug, description, total_days, icon, color) VALUES
-(1, 'Hip Opening', 'hip-opening', '21-day progressive hip flexibility program targeting external rotators, adductors, flexors, and deep hip muscles.', 21, 'hip', '#e94560');
+(1, 'Hip Opening', 'hip-opening', '21-day progressive hip flexibility program targeting external rotators, adductors, flexors, and deep hip muscles.', 21, 'hip', '#FF6B6B');
 
 -- DAYS (21 days, 3 weeks)
 -- Week 1: Foundational

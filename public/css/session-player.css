@@ -35,7 +35,7 @@
 }
 .session-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--orange));
+  background: linear-gradient(90deg, var(--green), var(--accent));
   border-radius: var(--radius-full);
   transition: width 0.5s ease;
 }
@@ -447,8 +447,8 @@
   /* Ambient glow — active state */
   .timer-circle.active {
     box-shadow:
-      0 0 40px rgba(233, 69, 96, 0.20),
-      0 0 80px rgba(233, 69, 96, 0.08);
+      0 0 40px rgba(255, 107, 107, 0.20),
+      0 0 80px rgba(255, 107, 107, 0.08);
   }
 
   /* Dramatic breathing — circle visibly swells and contracts */
@@ -456,16 +456,16 @@
     animation: landscapeBreathe 12s ease-in-out infinite;
   }
   @keyframes landscapeBreathe {
-    0%    { transform: scale(1);    box-shadow: 0 0 20px rgba(233,69,96,0.10), 0 0 40px rgba(233,69,96,0.03); }
-    33.3% { transform: scale(1.15); box-shadow: 0 0 60px rgba(233,69,96,0.40), 0 0 120px rgba(233,69,96,0.15); }
-    100%  { transform: scale(1);    box-shadow: 0 0 20px rgba(233,69,96,0.10), 0 0 40px rgba(233,69,96,0.03); }
+    0%    { transform: scale(1);    box-shadow: 0 0 20px rgba(255,107,107,0.10), 0 0 40px rgba(255,107,107,0.03); }
+    33.3% { transform: scale(1.15); box-shadow: 0 0 60px rgba(255,107,107,0.40), 0 0 120px rgba(255,107,107,0.15); }
+    100%  { transform: scale(1);    box-shadow: 0 0 20px rgba(255,107,107,0.10), 0 0 40px rgba(255,107,107,0.03); }
   }
 
   /* Ambient glow — complete state */
   .timer-circle.complete {
     box-shadow:
-      0 0 40px rgba(78, 204, 163, 0.25),
-      0 0 80px rgba(78, 204, 163, 0.10);
+      0 0 40px rgba(45, 212, 191, 0.25),
+      0 0 80px rgba(45, 212, 191, 0.10);
   }
 
   /* --- Right column: refined pill controls --- */

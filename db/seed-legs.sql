@@ -4,7 +4,7 @@
 
 -- ROUTINE
 INSERT INTO routine (id, name, slug, description, total_days, icon, color) VALUES
-(2, 'Hamstrings & Calves', 'hamstrings-calves', 'A progressive 10-day program targeting the posterior leg chain — hamstrings (biceps femoris, semitendinosus, semimembranosus), gastrocnemius, soleus, and associated connective tissue. Builds from standing basics to full integration poses.', 10, 'leg', '#4ecdc4');
+(2, 'Hamstrings & Calves', 'hamstrings-calves', 'A progressive 10-day program targeting the posterior leg chain — hamstrings (biceps femoris, semitendinosus, semimembranosus), gastrocnemius, soleus, and associated connective tissue. Builds from standing basics to full integration poses.', 10, 'leg', '#2DD4BF');
 
 -- =============================================
 -- DAYS (10 days, 2 weeks)

@@ -166,7 +166,7 @@ const HomeScreen = {
     const cycle = r.current_cycle || 1;
     const difficulty = r.difficulty || 'easy';
     const day = r.day;
-    const color = r.routine_color || '#e94560';
+    const color = r.routine_color || '#FF6B6B';
 
     if (r.painNote) {
       var painHtml = `

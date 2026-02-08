@@ -217,11 +217,11 @@ function _runMigrations() {
       description TEXT,
       total_days INTEGER NOT NULL,
       icon TEXT DEFAULT 'stretch',
-      color TEXT DEFAULT '#e94560',
+      color TEXT DEFAULT '#FF6B6B',
       created_at TEXT DEFAULT (datetime('now'))
     )`);
     // Insert default hip-opening routine
-    db.run("INSERT INTO routine (id, name, slug, description, total_days, icon, color) VALUES (1, 'Hip Opening', 'hip-opening', '21-day progressive hip flexibility program targeting external rotators, adductors, flexors, and deep hip muscles.', 21, 'hip', '#e94560')");
+    db.run("INSERT INTO routine (id, name, slug, description, total_days, icon, color) VALUES (1, 'Hip Opening', 'hip-opening', '21-day progressive hip flexibility program targeting external rotators, adductors, flexors, and deep hip muscles.', 21, 'hip', '#FF6B6B')");
     changed = true;
   }
 
@@ -365,6 +365,18 @@ function _runMigrations() {
     )`);
     changed = true;
   }
+
+  // Brand palette migration: update old routine colors to new palette
+  try {
+    const oldHip = db.prepare("SELECT id FROM routine WHERE color = '#e94560'");
+    if (oldHip.step()) {
+      console.log('  Migrating routine colors to new brand palette...');
+      db.run("UPDATE routine SET color = '#FF6B6B' WHERE color = '#e94560'");
+      db.run("UPDATE routine SET color = '#2DD4BF' WHERE color = '#4ecdc4'");
+      changed = true;
+    }
+    oldHip.free();
+  } catch (e) { /* routine table may not exist */ }
 
   // Ensure at least one admin exists — promote first user if none
   try {

@@ -74,8 +74,8 @@
 .path-day.locked::before { background: var(--text-muted); }
 
 @keyframes pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(233,69,96,0.4); }
-  50% { box-shadow: 0 0 0 8px rgba(233,69,96,0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,107,107,0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(255,107,107,0); }
 }
 
 .path-day:not(.locked):hover {
